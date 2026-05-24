@@ -1,0 +1,58 @@
+{
+  "name": "quality-platform",
+  "version": "0.1.0",
+  "description": "AI-native autonomous QC platform for governed Playwright-based quality operations",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:e2e": "playwright test --grep @e2e",
+    "test:api": "playwright test --grep @api",
+    "test:external": "playwright test --grep @external",
+    "test:visual": "playwright test --grep @visual",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+
+    "qc": "tsx scripts/run-qc.ts",
+    "qc:local": "TEST_ENV=local tsx scripts/run-qc.ts",
+    "qc:staging": "TEST_ENV=staging tsx scripts/run-qc.ts",
+    "qc:release": "TEST_ENV=staging tsx scripts/run-qc.ts --release",
+    "qc:production-smoke": "TEST_ENV=production-smoke tsx scripts/run-qc.ts",
+
+    "project:resolve": "tsx scripts/resolve-project-config.ts",
+    "create:project": "tsx scripts/create-project-space.ts",
+
+    "auth:login": "tsx scripts/auth-login.ts",
+    "auth:check": "tsx scripts/check-auth-state.ts",
+
+    "validate:structure": "tsx scripts/validate-structure.ts",
+
+    "check:ai-readiness": "tsx scripts/check-ai-readiness.ts",
+    "check:test-plan": "tsx scripts/check-test-plan-required.ts && tsx scripts/check-no-business-test-without-reviewed-plan.ts",
+    "check:safety": "tsx scripts/check-no-production-write.ts && tsx scripts/check-no-hardcoded-secret.ts",
+    "check:lifecycle": "tsx scripts/check-generated-not-promoted.ts",
+    "check:layering": "tsx scripts/check-spec-layering.ts",
+    "ai:check": "npm run validate:structure && npm run check:ai-readiness && npm run check:test-plan && npm run check:safety && npm run check:lifecycle && npm run check:layering",
+
+    "analyze:impact": "tsx scripts/analyze-impact.ts",
+    "generate:test-plan": "tsx scripts/generate-test-plan.ts",
+    "promote:test-asset": "tsx scripts/promote-test-asset.ts",
+    "classify:failure": "tsx scripts/classify-failure.ts",
+    "qc:summary": "tsx scripts/qc-summary.ts",
+    "guard:production": "tsx scripts/guard-production.ts",
+    "guard:all": "npm run typecheck && npm run ai:check",
+
+    "report": "playwright show-report",
+    "report:allure": "echo \"Allure report is reserved for future integration\"",
+    "lint": "echo \"Add ESLint when project lint policy is finalized\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^22.0.0",
+    "dotenv": "^16.5.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

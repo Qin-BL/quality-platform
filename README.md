@@ -1,0 +1,87 @@
+# quality-platform
+
+`quality-platform` is an **AI-native Autonomous QC Platform** for governed Playwright-based quality operations.
+
+It is:
+
+- AI QC Agent Runtime
+- Test Governance Platform
+- Playwright Execution Layer
+- Playwright MCP Exploration Layer
+- Auth Bootstrap Layer
+- Project Discovery Layer
+- Failure Classification Layer
+- Healing Suggestion Layer
+- CI Quality Gate Layer
+- Audit and Reporting Layer
+
+It is not:
+
+- A generic Playwright starter
+- A place for unit tests from product repos
+- A home for real business selectors, endpoints, secrets, or production write workflows
+
+## One-line Usage
+
+Future users should be able to say:
+
+`按照 AGENTS.md 的规范，执行 hiring QC。`
+
+The framework and AI workflow will expand that into:
+
+1. Detect `PROJECT_KEY=hiring`
+2. Read governance files
+3. Resolve project config
+4. Resolve auth config
+5. Check auth state
+6. Bootstrap local auth when needed
+7. Read context
+8. Read reviewed test plan
+9. Select tests
+10. Execute or prepare QC
+11. Generate a standard QC report
+
+## Core Commands
+
+```bash
+npm run typecheck
+npm run validate:structure
+npm run ai:check
+npm run guard:all
+
+npm run project:resolve -- --project hiring
+npm run auth:check -- --project hiring
+npm run auth:login -- --project hiring
+npm run qc -- --project hiring
+```
+
+## Minimal Setup
+
+```bash
+npm install
+cp .env.example .env
+```
+
+Windows users can use a shell that supports inline env vars or add `cross-env` later if the team decides it is worth the extra dependency. Phase 1 keeps dependencies minimal.
+
+## Current Status
+
+This repository currently contains **framework only**:
+
+- No real business project
+- No real business test
+- No real selector
+- No real endpoint
+- No real credential or token
+
+## Docs
+
+Start with:
+
+- [Architecture](./docs/qa/architecture.md)
+- [Simple QC Command](./docs/qa/simple-qc-command.md)
+- [Project Config Discovery](./docs/qa/project-config-discovery.md)
+- [Auth Bootstrap](./docs/qa/auth-bootstrap.md)
+- [Playwright MCP Strategy](./docs/qa/playwright-mcp-strategy.md)
+- [Playwright Test Agents Strategy](./docs/qa/playwright-test-agents-strategy.md)
+- [Autonomous QC Roadmap](./docs/qa/autonomous-qc-roadmap.md)
