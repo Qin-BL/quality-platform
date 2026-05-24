@@ -39,6 +39,13 @@ export interface ProjectUnitTestConfig {
   workingDir: string;
   command: string;
   requiredToProceed: boolean;
+  gates?: ProjectUnitTestGateConfig[];
+}
+
+export interface ProjectUnitTestGateConfig {
+  name: string;
+  workingDir: string;
+  command: string;
 }
 
 export interface ProjectSafetyConfig {

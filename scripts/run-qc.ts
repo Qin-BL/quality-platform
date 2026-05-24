@@ -25,6 +25,7 @@ import {
   resolveTestsDir,
 } from '../packages/project/project-discovery';
 import { parseQCCommand } from '../packages/project/qc-command-parser';
+import type { ProjectUnitTestGateConfig } from '../packages/project/project-config';
 
 dotenvConfig();
 
@@ -137,43 +138,30 @@ function writeReport(projectKey: string, report: string): string {
   return outputPath;
 }
 
-function runUnitTestGate(unitTests: {
-  enabled: boolean;
-  workingDir: string;
-  command: string;
-  requiredToProceed: boolean;
-}): {
+function runUnitTestGate(gate: ProjectUnitTestGateConfig): {
   status: 'not_configured' | 'skipped' | 'passed' | 'failed' | 'blocked';
   workingDir: string;
   notes: string;
   exitCode?: number;
 } {
-  if (!unitTests.enabled) {
-    return {
-      status: 'not_configured',
-      workingDir: '',
-      notes: 'Project config did not enable unit test precheck.',
-    };
-  }
-
-  if (!unitTests.command || !unitTests.workingDir) {
+  if (!gate.command || !gate.workingDir) {
     return {
       status: 'blocked',
-      workingDir: unitTests.workingDir,
-      notes: 'unitTests.enabled=true but command or workingDir is missing.',
+      workingDir: gate.workingDir,
+      notes: `Gate "${gate.name}" is missing command or workingDir.`,
     };
   }
 
-  const resolvedWorkingDir = resolve(ROOT, unitTests.workingDir);
+  const resolvedWorkingDir = resolve(ROOT, gate.workingDir);
   if (!existsSync(resolvedWorkingDir)) {
     return {
       status: 'blocked',
       workingDir: resolvedWorkingDir,
-      notes: `Configured unit test working directory does not exist: ${resolvedWorkingDir}`,
+      notes: `Gate "${gate.name}" working directory does not exist: ${resolvedWorkingDir}`,
     };
   }
 
-  const result = spawnSync(unitTests.command, {
+  const result = spawnSync(gate.command, {
     cwd: resolvedWorkingDir,
     stdio: 'inherit',
     shell: true,
@@ -183,7 +171,7 @@ function runUnitTestGate(unitTests: {
     return {
       status: 'passed',
       workingDir: resolvedWorkingDir,
-      notes: 'Configured unit test command passed.',
+      notes: `Gate "${gate.name}" passed.`,
       exitCode: 0,
     };
   }
@@ -191,9 +179,32 @@ function runUnitTestGate(unitTests: {
   return {
     status: 'failed',
     workingDir: resolvedWorkingDir,
-    notes: `Configured unit test command failed with exit code ${result.status ?? 1}.`,
+    notes: `Gate "${gate.name}" failed with exit code ${result.status ?? 1}.`,
     exitCode: result.status ?? 1,
   };
+}
+
+function getConfiguredUnitTestGates(unitTests: {
+  enabled: boolean;
+  workingDir: string;
+  command: string;
+  gates?: ProjectUnitTestGateConfig[];
+}): ProjectUnitTestGateConfig[] {
+  if (!unitTests.enabled) {
+    return [];
+  }
+
+  if (Array.isArray(unitTests.gates) && unitTests.gates.length > 0) {
+    return unitTests.gates;
+  }
+
+  return [
+    {
+      name: 'default',
+      workingDir: unitTests.workingDir,
+      command: unitTests.command,
+    },
+  ];
 }
 
 async function main(): Promise<void> {
@@ -229,6 +240,7 @@ async function main(): Promise<void> {
         .map((entry) => resolve(reviewedDir, entry.name))
     : [];
   const selectedTags = selectTags(cli.release, cli.env, discovery.config.tests);
+  const configuredUnitTestGates = getConfiguredUnitTestGates(discovery.config.unitTests);
   const testsDir = resolveTestsDir(cli.projectKey, ROOT);
   const grepExpression = buildTagExpression(selectedTags);
   const qcCommand = [
@@ -262,7 +274,7 @@ async function main(): Promise<void> {
   console.log(`Auth Status: ${authStatus.valid ? 'ready' : authStatus.reason}`);
   console.log(`Local Secret Config: ${authConfig.localConfigExists ? 'configured' : 'not configured'}`);
   console.log(
-    `Unit Test Gate: ${discovery.config.unitTests.enabled ? 'enabled' : 'not configured'}`
+    `Unit Test Gates: ${configuredUnitTestGates.length > 0 ? configuredUnitTestGates.length : 0}`
   );
   console.log(`AI Task State: ${contract.workflowState}`);
   console.log('');
@@ -277,16 +289,27 @@ async function main(): Promise<void> {
       ? 'Reviewed test plan exists. Runner may execute the mapped test set.'
       : 'No reviewed test plan detected. Long-term executable generation remains blocked.';
   report.testPlanUsed = reviewedTestPlans[0] || 'No reviewed test plan found.';
-  report.unitTestGate = {
-    enabled: discovery.config.unitTests.enabled,
-    requiredToProceed: discovery.config.unitTests.requiredToProceed,
-    status: discovery.config.unitTests.enabled ? 'skipped' : 'not_configured',
-    command: discovery.config.unitTests.command,
-    workingDir: discovery.config.unitTests.workingDir,
-    notes: discovery.config.unitTests.enabled
-      ? 'Unit test gate is configured and pending execution.'
-      : 'Project config did not enable unit test precheck.',
-  };
+  report.unitTestGates = configuredUnitTestGates.length
+    ? configuredUnitTestGates.map((gate) => ({
+        name: gate.name,
+        enabled: true,
+        requiredToProceed: discovery.config.unitTests.requiredToProceed,
+        status: 'skipped',
+        command: gate.command,
+        workingDir: gate.workingDir,
+        notes: 'Unit test gate is configured and pending execution.',
+      }))
+    : [
+        {
+          name: 'default',
+          enabled: false,
+          requiredToProceed: discovery.config.unitTests.requiredToProceed,
+          status: 'not_configured',
+          command: '',
+          workingDir: '',
+          notes: 'Project config did not enable unit test precheck.',
+        },
+      ];
   report.testsSelected = countSelectedTests(selectedTags);
   report.testsGenerated = {};
   report.testsExecuted = { total: 0, passed: 0, failed: 0, skipped: 0, duration: 0 };
@@ -336,49 +359,67 @@ async function main(): Promise<void> {
   }
   report.auditTrail = auditTrail;
 
-  if (discovery.config.unitTests.enabled) {
+  if (configuredUnitTestGates.length > 0) {
     console.log('Unit Test Precheck:');
-    console.log(`  Command: ${discovery.config.unitTests.command || '(not configured)'}`);
-    console.log(`  Working Dir: ${discovery.config.unitTests.workingDir || '(not configured)'}`);
+    for (const gate of configuredUnitTestGates) {
+      console.log(`  - ${gate.name}`);
+      console.log(`    Command: ${gate.command || '(not configured)'}`);
+      console.log(`    Working Dir: ${gate.workingDir || '(not configured)'}`);
+    }
     console.log('');
 
-    const unitTestGate = runUnitTestGate(discovery.config.unitTests);
-    report.unitTestGate = {
-      enabled: discovery.config.unitTests.enabled,
-      requiredToProceed: discovery.config.unitTests.requiredToProceed,
-      status: unitTestGate.status,
-      command: discovery.config.unitTests.command,
-      workingDir: unitTestGate.workingDir || discovery.config.unitTests.workingDir,
-      notes: unitTestGate.notes,
-    };
+    let blockingExitCode: number | undefined;
 
-    addToAuditTrail(
-      auditTrail,
-      createAuditEntry(
-        'unit_test_precheck',
-        'runner',
-        `${unitTestGate.status}: ${unitTestGate.notes}`,
-        unitTestGate.status === 'passed' ? 'success' : 'warning',
-        cli.projectKey
-      )
-    );
+    report.unitTestGates = configuredUnitTestGates.map((gate) => {
+      const gateResult = runUnitTestGate(gate);
 
-    if (
-      (unitTestGate.status === 'failed' || unitTestGate.status === 'blocked') &&
-      discovery.config.unitTests.requiredToProceed
-    ) {
+      addToAuditTrail(
+        auditTrail,
+        createAuditEntry(
+          'unit_test_precheck',
+          'runner',
+          `${gate.name}: ${gateResult.status}: ${gateResult.notes}`,
+          gateResult.status === 'passed' ? 'success' : 'warning',
+          cli.projectKey
+        )
+      );
+
+      if (
+        (gateResult.status === 'failed' || gateResult.status === 'blocked') &&
+        discovery.config.unitTests.requiredToProceed &&
+        blockingExitCode === undefined
+      ) {
+        blockingExitCode = gateResult.exitCode ?? 1;
+      }
+
+      return {
+        name: gate.name,
+        enabled: true,
+        requiredToProceed: discovery.config.unitTests.requiredToProceed,
+        status: gateResult.status,
+        command: gate.command,
+        workingDir: gateResult.workingDir || gate.workingDir,
+        notes: gateResult.notes,
+      };
+    });
+
+    if (blockingExitCode !== undefined) {
       report.summary =
-        'QC stopped at the unit test gate because the configured upstream unit tests did not pass.';
-      report.risks.push(`Unit test gate ${unitTestGate.status}: ${unitTestGate.notes}`);
+        'QC stopped at the unit test gate because one or more configured upstream unit test gates did not pass.';
+      for (const gate of report.unitTestGates) {
+        if (gate.status === 'failed' || gate.status === 'blocked') {
+          report.risks.push(`Unit test gate ${gate.name} ${gate.status}: ${gate.notes}`);
+        }
+      }
       report.nextSteps =
-        'Fix or rerun the upstream unit tests first. QC execution remains blocked until the unit test gate passes.';
+        'Fix or rerun the upstream unit tests first. QC execution remains blocked until every required unit test gate passes.';
 
-      console.log(`Unit test gate ${unitTestGate.status}. QC will not continue.`);
+      console.log('At least one required unit test gate failed or is blocked. QC will not continue.');
       console.log('');
 
       const blockedReportPath = writeReport(cli.projectKey, formatQCReport(report));
       console.log(`QC report written to: ${blockedReportPath}`);
-      process.exit(unitTestGate.exitCode ?? 1);
+      process.exit(blockingExitCode);
     }
   }
 

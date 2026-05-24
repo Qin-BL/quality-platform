@@ -91,11 +91,19 @@ async function main(): Promise<void> {
   console.log('');
   console.log('Unit Test Gate:');
   console.log(`  Enabled: ${discovery.config.unitTests.enabled}`);
-  console.log(`  Working Dir: ${discovery.config.unitTests.workingDir || '(not configured)'}`);
-  console.log(`  Command: ${discovery.config.unitTests.command || '(not configured)'}`);
   console.log(
     `  Required To Proceed: ${discovery.config.unitTests.requiredToProceed}`
   );
+  if (Array.isArray(discovery.config.unitTests.gates) && discovery.config.unitTests.gates.length > 0) {
+    for (const gate of discovery.config.unitTests.gates) {
+      console.log(`  Gate: ${gate.name}`);
+      console.log(`    Working Dir: ${gate.workingDir || '(not configured)'}`);
+      console.log(`    Command: ${gate.command || '(not configured)'}`);
+    }
+  } else {
+    console.log(`  Working Dir: ${discovery.config.unitTests.workingDir || '(not configured)'}`);
+    console.log(`  Command: ${discovery.config.unitTests.command || '(not configured)'}`);
+  }
 }
 
 await main();

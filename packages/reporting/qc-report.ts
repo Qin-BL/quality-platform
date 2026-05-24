@@ -39,6 +39,7 @@ export interface QCFailureEntry {
 }
 
 export interface QCUnitTestGate {
+  name: string;
   enabled: boolean;
   requiredToProceed: boolean;
   status: 'not_configured' | 'skipped' | 'passed' | 'failed' | 'blocked';
@@ -57,7 +58,7 @@ export interface QCReport {
   contextRead: string[];
   impactAnalysis: string;
   testPlanUsed: string;
-  unitTestGate: QCUnitTestGate;
+  unitTestGates: QCUnitTestGate[];
   testsSelected: QCSelectedTests;
   testsGenerated: Record<string, number>;
   testsExecuted: QCTestSummary;
@@ -80,14 +81,7 @@ export function createQCReport(projectKey: string, environment: string): QCRepor
     contextRead: [],
     impactAnalysis: '',
     testPlanUsed: '',
-    unitTestGate: {
-      enabled: false,
-      requiredToProceed: true,
-      status: 'not_configured',
-      command: '',
-      workingDir: '',
-      notes: '',
-    },
+    unitTestGates: [],
     testsSelected: { smoke: 0, e2e: 0, api: 0, external: 0, visual: 0 },
     testsGenerated: {},
     testsExecuted: { total: 0, passed: 0, failed: 0, skipped: 0, duration: 0 },
@@ -130,13 +124,18 @@ export function formatQCReport(report: QCReport): string {
 
   lines.push('', '## Impact Analysis', report.impactAnalysis || '_(No impact analysis recorded)_');
   lines.push('', '## Test Plan Used', report.testPlanUsed || '_(No test plan referenced)_');
-  lines.push('', '## Unit Test Gate');
-  lines.push(`- Enabled: ${report.unitTestGate.enabled ? 'Yes' : 'No'}`);
-  lines.push(`- Required To Proceed: ${report.unitTestGate.requiredToProceed ? 'Yes' : 'No'}`);
-  lines.push(`- Status: ${report.unitTestGate.status}`);
-  lines.push(`- Command: ${report.unitTestGate.command || '_(Not configured)_'}`);
-  lines.push(`- Working Dir: ${report.unitTestGate.workingDir || '_(Not configured)_'}`);
-  lines.push(`- Notes: ${report.unitTestGate.notes || '_(No notes)_'}`);
+  lines.push('', '## Unit Test Gates');
+  if (report.unitTestGates.length > 0) {
+    lines.push('| Gate | Enabled | Required | Status | Working Dir | Command | Notes |');
+    lines.push('|------|---------|----------|--------|-------------|---------|-------|');
+    for (const gate of report.unitTestGates) {
+      lines.push(
+        `| ${gate.name} | ${gate.enabled ? 'Yes' : 'No'} | ${gate.requiredToProceed ? 'Yes' : 'No'} | ${gate.status} | ${gate.workingDir || '_(Not configured)_'} | ${gate.command || '_(Not configured)_'} | ${gate.notes || '_(No notes)_'} |`
+      );
+    }
+  } else {
+    lines.push('_(No unit test gates configured)_');
+  }
   lines.push('', '## Tests Selected');
   lines.push(`- Smoke: ${report.testsSelected.smoke}`);
   lines.push(`- E2E: ${report.testsSelected.e2e}`);

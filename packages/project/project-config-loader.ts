@@ -108,12 +108,29 @@ export function validateProjectConfig(config: ProjectQCConfig): string[] {
   }
 
   if (config.unitTests.enabled) {
-    if (!config.unitTests.command) {
-      diagnostics.push('unitTests.command is empty while unitTests.enabled=true.');
-    }
+    const gates = config.unitTests.gates ?? [];
+    const hasGates = gates.length > 0;
 
-    if (!config.unitTests.workingDir) {
-      diagnostics.push('unitTests.workingDir is empty while unitTests.enabled=true.');
+    if (hasGates) {
+      for (const [index, gate] of gates.entries()) {
+        if (!gate.name) {
+          diagnostics.push(`unitTests.gates[${index}].name is empty.`);
+        }
+        if (!gate.command) {
+          diagnostics.push(`unitTests.gates[${index}].command is empty.`);
+        }
+        if (!gate.workingDir) {
+          diagnostics.push(`unitTests.gates[${index}].workingDir is empty.`);
+        }
+      }
+    } else {
+      if (!config.unitTests.command) {
+        diagnostics.push('unitTests.command is empty while unitTests.enabled=true.');
+      }
+
+      if (!config.unitTests.workingDir) {
+        diagnostics.push('unitTests.workingDir is empty while unitTests.enabled=true.');
+      }
     }
   }
 

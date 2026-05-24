@@ -32,6 +32,7 @@ const config: ProjectQCConfig = {
     workingDir: '',
     command: '',
     requiredToProceed: true,
+    gates: [],
   },
   externalSystems: [],
   safety: {
