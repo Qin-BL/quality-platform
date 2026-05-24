@@ -79,6 +79,8 @@ async function main(): Promise<void> {
   console.log(formatAuthConfigReport(authConfig));
   console.log(`  Auth State Status: ${authStatus.valid ? 'valid' : authStatus.reason}`);
   console.log(`  Auth State Path: ${maskAuthStatePath(authConfig.authStatePath)}`);
+  console.log(`  Local Secret Config Path: ${authConfig.localConfigPath}`);
+  console.log(`  Local Secret Config Exists: ${authConfig.localConfigExists ? 'Yes' : 'No'}`);
   console.log('');
 
   console.log('Safety:');

@@ -50,6 +50,8 @@ async function main(): Promise<void> {
   console.log(`Environment: ${env}`);
   console.log(`Mode: ${authConfig.mode}`);
   console.log(`Auth State Path: ${maskAuthStatePath(authConfig.authStatePath)}`);
+  console.log(`Local Secret Config Path: ${authConfig.localConfigPath}`);
+  console.log(`Local Secret Config Exists: ${authConfig.localConfigExists ? 'Yes' : 'No'}`);
   console.log(`Exists: ${status.exists ? 'Yes' : 'No'}`);
   console.log(`Valid: ${validated ? 'Yes' : 'No'}`);
   console.log(`Authenticated Check URL: ${authConfig.authenticatedCheckUrl ? '(configured)' : '(not configured)'}`);

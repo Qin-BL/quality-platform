@@ -200,6 +200,7 @@ async function main(): Promise<void> {
   console.log(`Environment: ${cli.env}`);
   console.log(`Reviewed Test Plans: ${reviewedTestPlans.length}`);
   console.log(`Auth Status: ${authStatus.valid ? 'ready' : authStatus.reason}`);
+  console.log(`Local Secret Config: ${authConfig.localConfigExists ? 'configured' : 'not configured'}`);
   console.log(`AI Task State: ${contract.workflowState}`);
   console.log('');
 

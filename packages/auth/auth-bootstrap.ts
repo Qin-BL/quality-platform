@@ -50,7 +50,7 @@ export function prepareAuthBootstrap(
       bootstrapMode: 'manual',
       message:
         `Auth state is missing or invalid at ${config.authStatePath}. ` +
-        `${config.loginUrl ? 'A headed browser can open the configured login page.' : 'Configure AUTH_LOGIN_URL first.'}`,
+        `${config.loginUrl ? 'A headed browser can open the configured login page.' : `Configure AUTH_LOGIN_URL or save loginUrl in ${config.localConfigPath} first.`}`,
       command: `npm run auth:login -- --project ${projectKey}`,
     };
   }
@@ -62,7 +62,7 @@ export function prepareAuthBootstrap(
       bootstrapMode: 'env',
       message:
         `Auth state is missing at ${config.authStatePath}. ` +
-        'env mode requires TEST_USER_EMAIL / TEST_USER_PASSWORD and a project adapter.',
+        `env mode requires TEST_USER_EMAIL / TEST_USER_PASSWORD from ${config.localConfigPath}, local env, or CI secrets plus a project adapter.`,
       command: `npm run auth:login -- --project ${projectKey}`,
     };
   }
@@ -73,7 +73,7 @@ export function prepareAuthBootstrap(
     bootstrapMode: 'preseeded',
     message:
       `Auth state is missing at ${config.authStatePath}. ` +
-      'preseeded mode requires CI secrets or pre-provisioned storageState.',
+      'preseeded mode requires CI secrets, a local secret config file, or a pre-provisioned storageState.',
     command: '',
   };
 }
@@ -144,6 +144,8 @@ function assertResolvedAuthConfig(
     config.allowProductionWrite === undefined ||
     config.ci === undefined ||
     config.headless === undefined ||
+    !config.localConfigPath ||
+    config.localConfigExists === undefined ||
     !config.source
   ) {
     throw new AuthBootstrapError(
@@ -168,7 +170,7 @@ async function bootstrapResolvedAuth(config: ResolvedAuthConfig): Promise<void> 
 
   if (config.mode === 'env') {
     throw new AuthBootstrapError(
-      'env auth mode requires a project-specific adapter based on templates/auth/auth.setup.template.ts. The framework does not invent selectors.'
+      `env auth mode requires a project-specific adapter based on templates/auth/auth.setup.template.ts plus credentials from ${config.localConfigPath}, local env, or CI secrets. The framework does not invent selectors.`
     );
   }
 

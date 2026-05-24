@@ -23,6 +23,7 @@ Example:
 - The project space does not exist
 - Context is too incomplete for safe planning
 - Human review is required for a draft plan
-- A required non-secret configuration item is missing
+- A required configuration item is missing
 
 When this happens, AI should ask only for the missing item and resume the interrupted workflow after the answer is provided.
+If the missing item is sensitive, AI should save it only to `.secrets/<project-key>/<TEST_ENV>.local.json` and then continue.

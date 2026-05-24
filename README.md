@@ -19,7 +19,7 @@ It is not:
 
 - A generic Playwright starter
 - A place for unit tests from product repos
-- A home for real business selectors, endpoints, secrets, or production write workflows
+- A home for real business selectors, endpoints, or production write workflows in tracked files
 
 ## One-line Usage
 
@@ -41,7 +41,7 @@ The framework and AI workflow will expand that into:
 10. Execute or prepare QC
 11. Generate a standard QC report
 
-If required non-secret configuration is missing during the workflow, the AI should ask only for that missing configuration and then continue the unfinished task.
+If required configuration is missing during the workflow, the AI should ask only for that missing configuration, save sensitive values only to local Git-ignored secret config files, and then continue the unfinished task.
 
 ## Core Commands
 
@@ -66,6 +66,8 @@ cp .env.example .env
 
 Windows users can use a shell that supports inline env vars or add `cross-env` later if the team decides it is worth the extra dependency. Phase 1 keeps dependencies minimal.
 
+For local secret reuse, the framework also supports `.secrets/<project-key>/<TEST_ENV>.local.json`. That file is ignored by Git and can store local-only auth URLs, usernames, passwords, tokens, or MFA-related values when a user explicitly provides them.
+
 ## Current Status
 
 This repository currently contains **framework only**:
@@ -74,7 +76,7 @@ This repository currently contains **framework only**:
 - No real business test
 - No real selector
 - No real endpoint
-- No real credential or token
+- No real credential or token in tracked files
 
 ## Docs
 

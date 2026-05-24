@@ -20,7 +20,8 @@ Current scope is **framework only**.
 - Do build runtime, governance, templates, scripts, docs, CI guards, and auth/bootstrap skeletons.
 - Do not add any concrete business project.
 - Do not add any real business test.
-- Do not add any real selector, endpoint, secret, token, credential, or login URL.
+- Do not add any real selector, endpoint, or login URL to tracked templates, docs, or source files.
+- If the user explicitly provides sensitive values, save them only to local Git-ignored secret config files.
 - Do not access any real external system.
 - Do not write to production.
 
@@ -30,7 +31,7 @@ Current scope is **framework only**.
 2. Do not invent business rules.
 3. Do not invent selectors.
 4. Do not invent API endpoints.
-5. Do not hardcode secrets.
+5. Do not hardcode secrets in tracked files.
 6. Do not write to production.
 7. Do not weaken assertions.
 8. Do not skip failing tests without explicit approval.
@@ -99,18 +100,19 @@ Discovery order:
 
 ## Missing Configuration Dialogue Rule
 
-If a task cannot safely continue because required non-secret configuration is missing before or during execution, the AI must:
+If a task cannot safely continue because required configuration is missing before or during execution, the AI must:
 
 1. Ask only for the minimum missing configuration needed to continue.
 2. Prefer a short, direct question over a broad questionnaire.
-3. Never ask the user to paste secrets into chat.
-4. Accept configuration as a path, non-secret URL, mode choice, or confirmation.
-5. Resume the unfinished task immediately after the missing configuration is provided.
-6. Avoid making the user repeat already provided context.
+3. If the missing item is sensitive and the user chooses to provide it in chat, save it only to a local Git-ignored secret config file.
+4. Never echo secrets back in logs or final output.
+5. Accept configuration as a path, URL, mode choice, secret value, or confirmation, depending on what is actually missing.
+6. Resume the unfinished task immediately after the missing configuration is provided.
+7. Avoid making the user repeat already provided context.
 
 ## Auth Bootstrap Rule
 
-AI must never ask the user to paste real usernames, passwords, API keys, tokens, private keys, MFA codes, or secrets into chat.
+AI may request sensitive auth values only when strictly necessary to continue the user's task. When the user provides them, the AI must save them only to local Git-ignored secret config files, must not repeat them back verbatim, and must not commit them.
 
 For local, debug, and exploratory workflows:
 
@@ -122,8 +124,9 @@ For local, debug, and exploratory workflows:
 6. Save `storageState` to `AUTH_STATE_PATH`.
 7. `AUTH_STATE_PATH` must be ignored by Git.
 8. Auth state files must never be committed.
-9. CI must use CI secrets, service accounts, or pre-provisioned auth state.
-10. Production must remain readonly by default.
+9. Local secret config files are allowed for local workflows only and must stay ignored by Git.
+10. CI must use CI secrets, service accounts, or pre-provisioned auth state.
+11. Production must remain readonly by default.
 
 ## Required Pre-change Plan
 

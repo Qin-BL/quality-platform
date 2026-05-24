@@ -39,7 +39,8 @@ All AI agents adding QC code or QC governance in this repository must comply wit
 13. Run `npm run ai:check`.
 14. Produce a QC report.
 
-If required non-secret configuration is missing during any step, ask for only the missing configuration and continue the unfinished workflow after it is provided.
+If required configuration is missing during any step, ask for only the missing configuration and continue the unfinished workflow after it is provided.
+If the user provides sensitive values, save them only to the local Git-ignored secret config file for that project and environment.
 
 ## Layering Rules
 
@@ -55,7 +56,7 @@ If required non-secret configuration is missing during any step, ask for only th
 1. Invent business rules.
 2. Invent selectors.
 3. Invent API endpoints.
-4. Hardcode secrets.
+4. Hardcode secrets in tracked files.
 5. Write to production.
 6. Weaken assertions.
 7. Skip failing tests without explicit approval.
@@ -81,6 +82,7 @@ If execution paused for missing configuration, final or interim output must also
 12. What configuration was missing
 13. What was requested from the user
 14. Which workflow step will resume next
+15. Whether any sensitive config was stored in a local Git-ignored file
 
 ## Simple Command Expansion Contract
 

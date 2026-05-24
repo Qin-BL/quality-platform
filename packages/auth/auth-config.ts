@@ -6,6 +6,11 @@ import {
   type ProjectAuthConfig,
   type ProjectAuthMode,
 } from '../project/project-config';
+import {
+  getLocalSecretConfigPath,
+  loadLocalSecretConfig,
+  localSecretConfigExists,
+} from './local-secret-config';
 
 export interface ResolvedAuthConfig {
   projectKey: string;
@@ -22,7 +27,9 @@ export interface ResolvedAuthConfig {
   headless: boolean;
   testUserEmail?: string;
   testUserPassword?: string;
-  source: 'project-config' | 'env' | 'default';
+  localConfigPath: string;
+  localConfigExists: boolean;
+  source: 'project-config' | 'local-secret-file' | 'env' | 'default';
 }
 
 export function resolveAuthConfig(
@@ -33,20 +40,27 @@ export function resolveAuthConfig(
 ): ResolvedAuthConfig {
   const base = root ? resolve(root) : process.cwd();
   const environment = normalizeProjectEnvironment(env);
+  const localConfigPath = getLocalSecretConfigPath(projectKey, environment, base);
+  const localConfig = loadLocalSecretConfig(projectKey, environment, base);
+  const localAuth = localConfig?.auth;
 
   const authStatePath =
     projectAuth?.authStatePath ||
+    localAuth?.authStatePath ||
     process.env.AUTH_STATE_PATH ||
     resolve(base, getAuthStatePath(projectKey, environment));
 
-  const loginUrl = projectAuth?.loginUrl || process.env.AUTH_LOGIN_URL || '';
+  const loginUrl =
+    projectAuth?.loginUrl || localAuth?.loginUrl || process.env.AUTH_LOGIN_URL || '';
   const authenticatedCheckUrl =
     projectAuth?.authenticatedCheckUrl ||
+    localAuth?.authenticatedCheckUrl ||
     process.env.AUTHENTICATED_CHECK_URL ||
     process.env.AUTH_CHECK_URL ||
     '';
   const successUrlPattern =
     projectAuth?.successUrlPattern ||
+    localAuth?.successUrlPattern ||
     process.env.AUTH_SUCCESS_URL_PATTERN ||
     DEFAULT_AUTH_CONFIG.successUrlPattern ||
     '/';
@@ -67,9 +81,11 @@ export function resolveAuthConfig(
     projectAuth?.allowProductionWrite ??
     (process.env.ALLOW_PRODUCTION_WRITE === 'true');
 
-  let source: 'project-config' | 'env' | 'default' = 'default';
+  let source: 'project-config' | 'local-secret-file' | 'env' | 'default' = 'default';
   if (projectAuth) {
     source = 'project-config';
+  } else if (localAuth) {
+    source = 'local-secret-file';
   } else if (process.env.AUTH_STATE_PATH || process.env.AUTH_LOGIN_URL) {
     source = 'env';
   }
@@ -89,8 +105,10 @@ export function resolveAuthConfig(
     headless:
       process.env.PLAYWRIGHT_HEADLESS !== 'false' &&
       process.env.HEADLESS !== 'false',
-    testUserEmail: process.env.TEST_USER_EMAIL,
-    testUserPassword: process.env.TEST_USER_PASSWORD,
+    testUserEmail: localAuth?.testUserEmail || process.env.TEST_USER_EMAIL,
+    testUserPassword: localAuth?.testUserPassword || process.env.TEST_USER_PASSWORD,
+    localConfigPath,
+    localConfigExists: localSecretConfigExists(projectKey, environment, base),
     source,
   };
 }
@@ -103,13 +121,13 @@ export function validateAuthConfig(config: ResolvedAuthConfig): {
 
   if (config.mode === 'manual' && !config.loginUrl) {
     issues.push(
-      'loginUrl is not configured. Set AUTH_LOGIN_URL in .env or the project config.'
+      'loginUrl is not configured. Set it in project config, .env, or the local secret config file.'
     );
   }
 
   if (config.mode === 'env' && (!config.testUserEmail || !config.testUserPassword)) {
     issues.push(
-      'env auth mode requires TEST_USER_EMAIL and TEST_USER_PASSWORD from local env or CI secrets.'
+      'env auth mode requires TEST_USER_EMAIL and TEST_USER_PASSWORD from the local secret config, local env, or CI secrets.'
     );
   }
 
@@ -140,6 +158,8 @@ export function formatAuthConfigReport(config: ResolvedAuthConfig): string {
     `  Allow Production Write: ${config.allowProductionWrite}`,
     `  Headless Default: ${config.headless}`,
     `  CI: ${config.ci}`,
+    `  Local Secret Config: ${config.localConfigExists ? '(configured)' : '(not configured)'}`,
+    `  Local Secret Config Path: ${config.localConfigPath}`,
     `  Source: ${config.source}`,
   ].join('\n');
 }

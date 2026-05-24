@@ -91,6 +91,7 @@ const REQUIRED_ENTRIES: RequiredEntry[] = [
   { path: 'packages/auth/auth-state.ts', type: 'file' },
   { path: 'packages/auth/auth-guards.ts', type: 'file' },
   { path: 'packages/auth/auth-bootstrap.ts', type: 'file' },
+  { path: 'packages/auth/local-secret-config.ts', type: 'file' },
 
   { path: 'packages/core/env.ts', type: 'file' },
   { path: 'packages/core/logger.ts', type: 'file' },

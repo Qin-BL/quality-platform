@@ -52,6 +52,8 @@ async function main(): Promise<void> {
   console.log(`Project: ${projectKey}`);
   console.log(`Environment: ${env}`);
   console.log(`Mode: ${authConfig.mode}`);
+  console.log(`Local Secret Config: ${authConfig.localConfigExists ? 'configured' : 'not configured'}`);
+  console.log(`Local Secret Config Path: ${authConfig.localConfigPath}`);
   console.log(`Auth State: ${status.valid ? 'valid' : status.reason}`);
   console.log('');
 

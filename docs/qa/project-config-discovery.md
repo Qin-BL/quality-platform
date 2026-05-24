@@ -9,4 +9,5 @@ Priority:
 
 This standardized layout is why users should not need to repeat where auth config, context, tests, or reviewed plans live.
 
-If discovery still cannot find a required non-secret configuration item, AI should ask the user only for that missing item and then continue with the same workflow.
+If discovery still cannot find a required configuration item, AI should ask the user only for that missing item and then continue with the same workflow.
+If the user provides a sensitive value, AI should save it only to `.secrets/<project-key>/<TEST_ENV>.local.json` and then continue.

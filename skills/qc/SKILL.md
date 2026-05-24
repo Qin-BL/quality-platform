@@ -37,12 +37,13 @@ Even if the user asks to add tests directly, the agent must:
 
 ## Missing Configuration Workflow
 
-When required non-secret configuration is missing before or during QC:
+When required configuration is missing before or during QC:
 
 1. Identify the exact missing item.
 2. Ask the user only for that item.
-3. Do not ask for secrets.
-4. After the user provides the missing configuration, continue the interrupted workflow instead of restarting from scratch.
+3. If the user provides a sensitive value, save it only to the local Git-ignored secret config file for that project and environment.
+4. Do not print the sensitive value back to the user.
+5. After the user provides the missing configuration, continue the interrupted workflow instead of restarting from scratch.
 
 ## Auth Handling Workflow
 
@@ -50,7 +51,7 @@ When required non-secret configuration is missing before or during QC:
 2. `CI`: manual auth forbidden.
 3. `staging`: env or preseeded auth.
 4. `production-smoke`: readonly only.
-5. Never ask for secret values.
+5. Sensitive values may be accepted only for local Git-ignored config storage, never for tracked files.
 
 ## Healer Rules
 

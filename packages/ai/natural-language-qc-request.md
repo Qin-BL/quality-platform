@@ -44,7 +44,8 @@ QC execution complete (completed/)
 4. Identify if the request is for a known or new project
 5. If new project, flag that context documents must be filled first
 6. Route to Planner Agent for impact analysis
-7. If required non-secret configuration is missing, ask a minimal follow-up question and continue after the user answers
+7. If required configuration is missing, ask a minimal follow-up question and continue after the user answers
+8. If the answer includes sensitive data, save it only to the local Git-ignored secret config file before continuing
 
 ---
 
