@@ -21,3 +21,4 @@ Modes:
 - Auth state must never be committed
 - CI must not use manual auth
 - `production-smoke` stays readonly
+- If a non-secret auth configuration value is missing, ask for only that value and continue the same bootstrap flow after it is provided

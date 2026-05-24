@@ -41,6 +41,8 @@ The framework and AI workflow will expand that into:
 10. Execute or prepare QC
 11. Generate a standard QC report
 
+If required non-secret configuration is missing during the workflow, the AI should ask only for that missing configuration and then continue the unfinished task.
+
 ## Core Commands
 
 ```bash

@@ -35,6 +35,15 @@ Even if the user asks to add tests directly, the agent must:
 4. Refuse to generate long-term tests without a reviewed test plan.
 5. Offer temporary exploratory tests only if the user explicitly allows them.
 
+## Missing Configuration Workflow
+
+When required non-secret configuration is missing before or during QC:
+
+1. Identify the exact missing item.
+2. Ask the user only for that item.
+3. Do not ask for secrets.
+4. After the user provides the missing configuration, continue the interrupted workflow instead of restarting from scratch.
+
 ## Auth Handling Workflow
 
 1. `local`: manual auth bootstrap allowed.

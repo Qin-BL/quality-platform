@@ -97,6 +97,17 @@ Discovery order:
 3. Environment variables
 4. Safe defaults
 
+## Missing Configuration Dialogue Rule
+
+If a task cannot safely continue because required non-secret configuration is missing before or during execution, the AI must:
+
+1. Ask only for the minimum missing configuration needed to continue.
+2. Prefer a short, direct question over a broad questionnaire.
+3. Never ask the user to paste secrets into chat.
+4. Accept configuration as a path, non-secret URL, mode choice, or confirmation.
+5. Resume the unfinished task immediately after the missing configuration is provided.
+6. Avoid making the user repeat already provided context.
+
 ## Auth Bootstrap Rule
 
 AI must never ask the user to paste real usernames, passwords, API keys, tokens, private keys, MFA codes, or secrets into chat.

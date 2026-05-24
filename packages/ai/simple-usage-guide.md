@@ -9,9 +9,13 @@ Users may say:
 
 AI must automatically expand these requests into governed workflows.
 
+If the workflow hits missing required non-secret configuration, AI should ask for only that missing configuration and then continue the same task.
+
 ## Execute QC
 
 `执行 hiring QC` expands into project discovery, auth discovery, auth state check, context read, reviewed test plan lookup, test selection, and report generation.
+
+If config like a missing project-level non-secret URL, auth mode choice, or config file path blocks progress, AI should ask for that item and then resume QC.
 
 ## Generate Test Plan
 

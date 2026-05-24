@@ -39,6 +39,8 @@ All AI agents adding QC code or QC governance in this repository must comply wit
 13. Run `npm run ai:check`.
 14. Produce a QC report.
 
+If required non-secret configuration is missing during any step, ask for only the missing configuration and continue the unfinished workflow after it is provided.
+
 ## Layering Rules
 
 1. Specs only orchestrate.
@@ -73,6 +75,12 @@ All AI agents adding QC code or QC governance in this repository must comply wit
 9. Risks
 10. Open questions
 11. Recommended next step
+
+If execution paused for missing configuration, final or interim output must also record:
+
+12. What configuration was missing
+13. What was requested from the user
+14. Which workflow step will resume next
 
 ## Simple Command Expansion Contract
 

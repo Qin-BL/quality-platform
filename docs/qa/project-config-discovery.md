@@ -8,3 +8,5 @@ Priority:
 4. Safe defaults
 
 This standardized layout is why users should not need to repeat where auth config, context, tests, or reviewed plans live.
+
+If discovery still cannot find a required non-secret configuration item, AI should ask the user only for that missing item and then continue with the same workflow.
