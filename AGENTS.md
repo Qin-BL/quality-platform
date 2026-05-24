@@ -20,6 +20,7 @@ Current scope is **framework only**.
 - Do build runtime, governance, templates, scripts, docs, CI guards, and auth/bootstrap skeletons.
 - Do not add any concrete business project.
 - Do not add any real business test.
+- Do not use this repository to author unit tests for concrete product-repository internal code.
 - Do not add any real selector, endpoint, or login URL to tracked templates, docs, or source files.
 - If the user explicitly provides sensitive values, save them only to local Git-ignored secret config files.
 - Do not access any real external system.
@@ -38,11 +39,12 @@ Current scope is **framework only**.
 9. Do not promote generated tests directly.
 10. Do not place business logic inside spec files.
 11. Do not modify unrelated business code.
-12. Do not use MCP exploration results as final business assertions.
-13. Do not treat AI-generated output as reviewed unless a human explicitly reviewed it.
-14. Always record what context was read.
-15. Always record what test plan was used.
-16. Always output risks and open questions.
+12. Do not use this repository to add unit tests for business-repository internals.
+13. Do not use MCP exploration results as final business assertions.
+14. Do not treat AI-generated output as reviewed unless a human explicitly reviewed it.
+15. Always record what context was read.
+16. Always record what test plan was used.
+17. Always output risks and open questions.
 
 ## Test Governance Rules
 

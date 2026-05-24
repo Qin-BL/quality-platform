@@ -21,3 +21,4 @@ Core principles:
 - Test plan first
 - Reviewed test plan for long-term tests
 - Generated tests follow lifecycle governance
+- Product-repository internal unit tests stay outside this platform's scope

@@ -18,7 +18,8 @@ It is:
 It is not:
 
 - A generic Playwright starter
-- A place for unit tests from product repos
+- A place for unit tests owned by concrete product or service repositories
+- A repo for changing or backfilling business-project internal unit-test suites
 - A home for real business selectors, endpoints, or production write workflows in tracked files
 
 ## One-line Usage
@@ -74,6 +75,7 @@ This repository currently contains **framework only**:
 
 - No real business project
 - No real business test
+- No business-repository unit tests
 - No real selector
 - No real endpoint
 - No real credential or token in tracked files

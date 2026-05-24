@@ -2,6 +2,8 @@
 
 This skill defines **how AI executes QC**. It is not a test repository.
 
+It does not authorize writing unit tests for internal business-project code. Those tests belong in the corresponding product or service repository.
+
 ## Simple QC Execution Workflow
 
 For:

@@ -6,4 +6,5 @@
 4. Keep production readonly by default.
 5. Treat auth state as sensitive.
 6. Keep specs thin and reusable layers explicit.
-7. Record risks, open questions, and evidence every time.
+7. Keep concrete product-repository unit tests out of this platform.
+8. Record risks, open questions, and evidence every time.
