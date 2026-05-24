@@ -33,14 +33,16 @@ The framework and AI workflow will expand that into:
 1. Detect `PROJECT_KEY=hiring`
 2. Read governance files
 3. Resolve project config
-4. Resolve auth config
-5. Check auth state
-6. Bootstrap local auth when needed
-7. Read context
-8. Read reviewed test plan
-9. Select tests
-10. Execute or prepare QC
-11. Generate a standard QC report
+4. Run the configured unit-test gate first when the target system exposes an existing unit-test command
+5. Stop immediately if that required unit-test gate fails
+6. Resolve auth config
+7. Check auth state
+8. Bootstrap local auth when needed
+9. Read context
+10. Read reviewed test plan
+11. Select tests
+12. Execute or prepare QC
+13. Generate a standard QC report
 
 If required configuration is missing during the workflow, the AI should ask only for that missing configuration, save sensitive values only to local Git-ignored secret config files, and then continue the unfinished task.
 

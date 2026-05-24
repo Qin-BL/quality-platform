@@ -107,6 +107,16 @@ export function validateProjectConfig(config: ProjectQCConfig): string[] {
     diagnostics.push('context.testPlansReviewedDir is empty.');
   }
 
+  if (config.unitTests.enabled) {
+    if (!config.unitTests.command) {
+      diagnostics.push('unitTests.command is empty while unitTests.enabled=true.');
+    }
+
+    if (!config.unitTests.workingDir) {
+      diagnostics.push('unitTests.workingDir is empty while unitTests.enabled=true.');
+    }
+  }
+
   return diagnostics;
 }
 

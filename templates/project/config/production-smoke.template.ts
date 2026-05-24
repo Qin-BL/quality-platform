@@ -27,6 +27,12 @@ const config: ProjectQCConfig = {
     testPlansReviewedDir: 'projects/__PROJECT_KEY__/test-plans/reviewed',
     testPlansArchivedDir: 'projects/__PROJECT_KEY__/test-plans/archived',
   },
+  unitTests: {
+    enabled: false,
+    workingDir: '',
+    command: '',
+    requiredToProceed: true,
+  },
   externalSystems: [],
   safety: {
     readonly: true,

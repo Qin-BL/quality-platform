@@ -8,6 +8,7 @@ export type AuditActionType =
   | 'asset_promoted'
   | 'asset_deprecated'
   | 'production_guard_check'
+  | 'unit_test_precheck'
   | 'external_system_access'
   | 'qc_request_analyzed'
   | 'qc_request_completed'

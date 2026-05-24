@@ -6,5 +6,5 @@
 4. Keep production readonly by default.
 5. Treat auth state as sensitive.
 6. Keep specs thin and reusable layers explicit.
-7. Keep concrete product-repository unit tests out of this platform.
+7. Keep concrete product-repository unit tests out of this platform, but run the existing upstream unit-test gate first when a project config points to it.
 8. Record risks, open questions, and evidence every time.

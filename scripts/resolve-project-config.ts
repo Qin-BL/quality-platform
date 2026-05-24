@@ -88,6 +88,14 @@ async function main(): Promise<void> {
   console.log(`  Allow Production Write: ${discovery.config.safety.allowProductionWrite}`);
   console.log(`  Allow External Write: ${discovery.config.safety.allowExternalWrite}`);
   console.log(`  Require Reviewed Test Plan: ${discovery.config.safety.requireReviewedTestPlan}`);
+  console.log('');
+  console.log('Unit Test Gate:');
+  console.log(`  Enabled: ${discovery.config.unitTests.enabled}`);
+  console.log(`  Working Dir: ${discovery.config.unitTests.workingDir || '(not configured)'}`);
+  console.log(`  Command: ${discovery.config.unitTests.command || '(not configured)'}`);
+  console.log(
+    `  Required To Proceed: ${discovery.config.unitTests.requiredToProceed}`
+  );
 }
 
 await main();

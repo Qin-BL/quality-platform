@@ -38,6 +38,15 @@ export interface QCFailureEntry {
   action: string;
 }
 
+export interface QCUnitTestGate {
+  enabled: boolean;
+  requiredToProceed: boolean;
+  status: 'not_configured' | 'skipped' | 'passed' | 'failed' | 'blocked';
+  command: string;
+  workingDir: string;
+  notes: string;
+}
+
 export interface QCReport {
   projectKey: string;
   environment: string;
@@ -48,6 +57,7 @@ export interface QCReport {
   contextRead: string[];
   impactAnalysis: string;
   testPlanUsed: string;
+  unitTestGate: QCUnitTestGate;
   testsSelected: QCSelectedTests;
   testsGenerated: Record<string, number>;
   testsExecuted: QCTestSummary;
@@ -70,6 +80,14 @@ export function createQCReport(projectKey: string, environment: string): QCRepor
     contextRead: [],
     impactAnalysis: '',
     testPlanUsed: '',
+    unitTestGate: {
+      enabled: false,
+      requiredToProceed: true,
+      status: 'not_configured',
+      command: '',
+      workingDir: '',
+      notes: '',
+    },
     testsSelected: { smoke: 0, e2e: 0, api: 0, external: 0, visual: 0 },
     testsGenerated: {},
     testsExecuted: { total: 0, passed: 0, failed: 0, skipped: 0, duration: 0 },
@@ -112,6 +130,13 @@ export function formatQCReport(report: QCReport): string {
 
   lines.push('', '## Impact Analysis', report.impactAnalysis || '_(No impact analysis recorded)_');
   lines.push('', '## Test Plan Used', report.testPlanUsed || '_(No test plan referenced)_');
+  lines.push('', '## Unit Test Gate');
+  lines.push(`- Enabled: ${report.unitTestGate.enabled ? 'Yes' : 'No'}`);
+  lines.push(`- Required To Proceed: ${report.unitTestGate.requiredToProceed ? 'Yes' : 'No'}`);
+  lines.push(`- Status: ${report.unitTestGate.status}`);
+  lines.push(`- Command: ${report.unitTestGate.command || '_(Not configured)_'}`);
+  lines.push(`- Working Dir: ${report.unitTestGate.workingDir || '_(Not configured)_'}`);
+  lines.push(`- Notes: ${report.unitTestGate.notes || '_(No notes)_'}`);
   lines.push('', '## Tests Selected');
   lines.push(`- Smoke: ${report.testsSelected.smoke}`);
   lines.push(`- E2E: ${report.testsSelected.e2e}`);

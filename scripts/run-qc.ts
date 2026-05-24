@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, writeFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { spawnSync } from 'child_process';
 import { config as dotenvConfig } from 'dotenv';
 import { validateAiTaskContract } from '../packages/ai/ai-task-contract';
 import { createAuditEntry, createAuditTrail, addToAuditTrail } from '../packages/reporting/audit-log';
@@ -136,6 +137,65 @@ function writeReport(projectKey: string, report: string): string {
   return outputPath;
 }
 
+function runUnitTestGate(unitTests: {
+  enabled: boolean;
+  workingDir: string;
+  command: string;
+  requiredToProceed: boolean;
+}): {
+  status: 'not_configured' | 'skipped' | 'passed' | 'failed' | 'blocked';
+  workingDir: string;
+  notes: string;
+  exitCode?: number;
+} {
+  if (!unitTests.enabled) {
+    return {
+      status: 'not_configured',
+      workingDir: '',
+      notes: 'Project config did not enable unit test precheck.',
+    };
+  }
+
+  if (!unitTests.command || !unitTests.workingDir) {
+    return {
+      status: 'blocked',
+      workingDir: unitTests.workingDir,
+      notes: 'unitTests.enabled=true but command or workingDir is missing.',
+    };
+  }
+
+  const resolvedWorkingDir = resolve(ROOT, unitTests.workingDir);
+  if (!existsSync(resolvedWorkingDir)) {
+    return {
+      status: 'blocked',
+      workingDir: resolvedWorkingDir,
+      notes: `Configured unit test working directory does not exist: ${resolvedWorkingDir}`,
+    };
+  }
+
+  const result = spawnSync(unitTests.command, {
+    cwd: resolvedWorkingDir,
+    stdio: 'inherit',
+    shell: true,
+  });
+
+  if (result.status === 0) {
+    return {
+      status: 'passed',
+      workingDir: resolvedWorkingDir,
+      notes: 'Configured unit test command passed.',
+      exitCode: 0,
+    };
+  }
+
+  return {
+    status: 'failed',
+    workingDir: resolvedWorkingDir,
+    notes: `Configured unit test command failed with exit code ${result.status ?? 1}.`,
+    exitCode: result.status ?? 1,
+  };
+}
+
 async function main(): Promise<void> {
   const cli = parseCli();
   const parsedCommand = parseQCCommand(cli.rawText || `run ${cli.projectKey || ''} qc`);
@@ -201,12 +261,11 @@ async function main(): Promise<void> {
   console.log(`Reviewed Test Plans: ${reviewedTestPlans.length}`);
   console.log(`Auth Status: ${authStatus.valid ? 'ready' : authStatus.reason}`);
   console.log(`Local Secret Config: ${authConfig.localConfigExists ? 'configured' : 'not configured'}`);
+  console.log(
+    `Unit Test Gate: ${discovery.config.unitTests.enabled ? 'enabled' : 'not configured'}`
+  );
   console.log(`AI Task State: ${contract.workflowState}`);
   console.log('');
-
-  if (!authStatus.valid && cli.bootstrapAuth && bootstrap.needsBootstrap) {
-    await bootstrapAuth(authConfig);
-  }
 
   const report = createQCReport(cli.projectKey, cli.env);
   report.request = cli.rawText || `按照 AGENTS.md 的规范，执行 ${cli.projectKey} QC。`;
@@ -218,6 +277,16 @@ async function main(): Promise<void> {
       ? 'Reviewed test plan exists. Runner may execute the mapped test set.'
       : 'No reviewed test plan detected. Long-term executable generation remains blocked.';
   report.testPlanUsed = reviewedTestPlans[0] || 'No reviewed test plan found.';
+  report.unitTestGate = {
+    enabled: discovery.config.unitTests.enabled,
+    requiredToProceed: discovery.config.unitTests.requiredToProceed,
+    status: discovery.config.unitTests.enabled ? 'skipped' : 'not_configured',
+    command: discovery.config.unitTests.command,
+    workingDir: discovery.config.unitTests.workingDir,
+    notes: discovery.config.unitTests.enabled
+      ? 'Unit test gate is configured and pending execution.'
+      : 'Project config did not enable unit test precheck.',
+  };
   report.testsSelected = countSelectedTests(selectedTags);
   report.testsGenerated = {};
   report.testsExecuted = { total: 0, passed: 0, failed: 0, skipped: 0, duration: 0 };
@@ -266,6 +335,56 @@ async function main(): Promise<void> {
     );
   }
   report.auditTrail = auditTrail;
+
+  if (discovery.config.unitTests.enabled) {
+    console.log('Unit Test Precheck:');
+    console.log(`  Command: ${discovery.config.unitTests.command || '(not configured)'}`);
+    console.log(`  Working Dir: ${discovery.config.unitTests.workingDir || '(not configured)'}`);
+    console.log('');
+
+    const unitTestGate = runUnitTestGate(discovery.config.unitTests);
+    report.unitTestGate = {
+      enabled: discovery.config.unitTests.enabled,
+      requiredToProceed: discovery.config.unitTests.requiredToProceed,
+      status: unitTestGate.status,
+      command: discovery.config.unitTests.command,
+      workingDir: unitTestGate.workingDir || discovery.config.unitTests.workingDir,
+      notes: unitTestGate.notes,
+    };
+
+    addToAuditTrail(
+      auditTrail,
+      createAuditEntry(
+        'unit_test_precheck',
+        'runner',
+        `${unitTestGate.status}: ${unitTestGate.notes}`,
+        unitTestGate.status === 'passed' ? 'success' : 'warning',
+        cli.projectKey
+      )
+    );
+
+    if (
+      (unitTestGate.status === 'failed' || unitTestGate.status === 'blocked') &&
+      discovery.config.unitTests.requiredToProceed
+    ) {
+      report.summary =
+        'QC stopped at the unit test gate because the configured upstream unit tests did not pass.';
+      report.risks.push(`Unit test gate ${unitTestGate.status}: ${unitTestGate.notes}`);
+      report.nextSteps =
+        'Fix or rerun the upstream unit tests first. QC execution remains blocked until the unit test gate passes.';
+
+      console.log(`Unit test gate ${unitTestGate.status}. QC will not continue.`);
+      console.log('');
+
+      const blockedReportPath = writeReport(cli.projectKey, formatQCReport(report));
+      console.log(`QC report written to: ${blockedReportPath}`);
+      process.exit(unitTestGate.exitCode ?? 1);
+    }
+  }
+
+  if (!authStatus.valid && cli.bootstrapAuth && bootstrap.needsBootstrap) {
+    await bootstrapAuth(authConfig);
+  }
 
   console.log('Context Check:');
   for (const contextPath of contextPaths) {

@@ -34,6 +34,13 @@ export interface ProjectContextConfig {
   testPlansArchivedDir: string;
 }
 
+export interface ProjectUnitTestConfig {
+  enabled: boolean;
+  workingDir: string;
+  command: string;
+  requiredToProceed: boolean;
+}
+
 export interface ProjectSafetyConfig {
   readonly: boolean;
   allowProductionWrite: boolean;
@@ -48,6 +55,7 @@ export interface ProjectQCConfig {
   auth: ProjectAuthConfig;
   tests: ProjectTestConfig;
   context: ProjectContextConfig;
+  unitTests: ProjectUnitTestConfig;
   externalSystems: string[];
   safety: ProjectSafetyConfig;
 }
@@ -103,6 +111,8 @@ export const SAFE_DEFAULTS = {
   requireReviewedTestPlan: true,
   testDir: 'tests',
   reportDir: 'reports/qc',
+  unitTestsEnabled: false,
+  unitTestsRequiredToProceed: true,
 };
 
 function getDefaultAuthMode(environment: ProjectEnvironment): ProjectAuthMode {
@@ -144,6 +154,12 @@ export function createDefaultProjectConfig(
       testPlansReviewedDir: getDefaultTestPlansDir(projectKey, 'reviewed'),
       testPlansArchivedDir: getDefaultTestPlansDir(projectKey, 'archived'),
     },
+    unitTests: {
+      enabled: SAFE_DEFAULTS.unitTestsEnabled,
+      workingDir: '',
+      command: '',
+      requiredToProceed: SAFE_DEFAULTS.unitTestsRequiredToProceed,
+    },
     externalSystems: [],
     safety: {
       readonly,
@@ -174,6 +190,10 @@ export function mergeProjectConfig(
     context: {
       ...base.context,
       ...override.context,
+    },
+    unitTests: {
+      ...base.unitTests,
+      ...override.unitTests,
     },
     externalSystems: override.externalSystems ?? base.externalSystems,
     safety: {

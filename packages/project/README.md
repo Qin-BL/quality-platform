@@ -7,6 +7,7 @@ This package owns project discovery, config loading, and natural-language QC com
 1. Project config discovery is standardized.
 2. Users should not need to tell AI where context, auth config, or reviewed test plans live.
 3. Safe defaults remain readonly-first and review-first.
+4. Optional upstream unit-test gates can be declared in project config and must pass before QC continues.
 
 ### qc-command-parser.ts
 

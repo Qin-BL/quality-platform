@@ -55,6 +55,7 @@ Current scope is **framework only**.
 5. Generated tests must flow through `generated -> reviewed -> promoted -> deprecated`.
 6. Generated tests cannot be promoted directly.
 7. Production smoke is readonly only.
+8. If the tested system has an existing unit-test command configured in project config, run that unit-test gate first and stop QC when it fails.
 
 ## Layering Rules
 

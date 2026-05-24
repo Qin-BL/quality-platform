@@ -16,16 +16,18 @@ The QC Agent must:
 2. Detect `PROJECT_KEY`.
 3. Resolve the project space.
 4. Resolve project config.
-5. Resolve auth config.
-6. Check auth state.
-7. Bootstrap local auth if needed.
-8. Read context.
-9. Read the reviewed test plan.
-10. Select tests.
-11. Execute QC or prepare the governed command.
-12. Analyze failures.
-13. Suggest healing.
-14. Produce a report.
+5. Run the configured unit-test gate first when the target system has existing unit tests.
+6. Stop the workflow if the required unit-test gate fails.
+7. Resolve auth config.
+8. Check auth state.
+9. Bootstrap local auth if needed.
+10. Read context.
+11. Read the reviewed test plan.
+12. Select tests.
+13. Execute QC or prepare the governed command.
+14. Analyze failures.
+15. Suggest healing.
+16. Produce a report.
 
 ## Minimum Safe Workflow
 
