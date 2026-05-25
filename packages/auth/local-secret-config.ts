@@ -18,8 +18,13 @@ export interface LocalRuntimeSecretConfig {
   sshCommand?: string;
   remoteDjangoContainer?: string;
   firstLoginTestEmail?: string;
+  firstLoginNewPassword?: string;
   resetTestEmail?: string;
   resetTestPassword?: string;
+  resetNewPassword?: string;
+  resetMismatchCandidate?: string;
+  resetMismatchConfirmation?: string;
+  [key: string]: string | undefined;
 }
 
 export interface LocalSecretConfig {
