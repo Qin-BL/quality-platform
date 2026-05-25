@@ -1,11 +1,17 @@
 import { defineConfig, devices } from '@playwright/test';
+import type { ReporterDescription } from '@playwright/test';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
+import { createRequire } from 'module';
+import { loadLocalSecretConfig } from './packages/auth/local-secret-config';
 
 const TEST_ENV = process.env.TEST_ENV || 'local';
 const PROJECT_KEY = process.env.PROJECT_KEY || '';
+const localSecrets = PROJECT_KEY ? loadLocalSecretConfig(PROJECT_KEY, TEST_ENV, process.cwd()) : undefined;
 const BASE_URL =
   process.env.PLAYWRIGHT_BASE_URL ||
+  localSecrets?.runtime?.playwrightBaseUrl ||
+  localSecrets?.auth?.loginUrl ||
   process.env.APP_BASE_URL ||
   'http://127.0.0.1:3000';
 
@@ -24,6 +30,23 @@ function resolveAuthStatePath(): string | undefined {
 }
 
 const authStatePath = resolveAuthStatePath();
+const require = createRequire(import.meta.url);
+
+function resolveReporters(): ReporterDescription[] {
+  const reporters: ReporterDescription[] = [
+    ['html', { outputFolder: 'playwright-report' }],
+    ['list'],
+  ];
+
+  try {
+    require.resolve('allure-playwright');
+    reporters.push(['allure-playwright', { outputFolder: 'allure-results' }]);
+  } catch {
+    // Allure is optional in phase 1. Skip it when the reporter package is not installed.
+  }
+
+  return reporters;
+}
 
 export default defineConfig({
   testDir: './projects',
@@ -34,11 +57,7 @@ export default defineConfig({
   forbidOnly: process.env.CI === 'true',
   retries: process.env.CI === 'true' ? 2 : 0,
   workers: process.env.CI === 'true' ? 2 : undefined,
-  reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['list'],
-    ['allure-playwright', { outputFolder: 'allure-results' }],
-  ],
+  reporter: resolveReporters(),
   use: {
     baseURL: BASE_URL,
     screenshot: 'only-on-failure',

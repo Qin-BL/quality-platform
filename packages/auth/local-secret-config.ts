@@ -12,8 +12,19 @@ export interface LocalAuthSecretConfig {
   apiToken?: string;
 }
 
+export interface LocalRuntimeSecretConfig {
+  playwrightBaseUrl?: string;
+  verificationCodeStrategy?: string;
+  sshCommand?: string;
+  remoteDjangoContainer?: string;
+  firstLoginTestEmail?: string;
+  resetTestEmail?: string;
+  resetTestPassword?: string;
+}
+
 export interface LocalSecretConfig {
   auth?: LocalAuthSecretConfig;
+  runtime?: LocalRuntimeSecretConfig;
 }
 
 const DEFAULT_SECRET_DIR = '.secrets';
