@@ -32,7 +32,21 @@ const config: ProjectQCConfig = {
     workingDir: '',
     command: '',
     requiredToProceed: true,
-    gates: [],
+    gates: [
+      // Example:
+      // {
+      //   name: '__PROJECT_KEY__-frontend-unit-tests',
+      //   workingDir: '../path-to-frontend',
+      //   command: 'npm test',
+      //   coverage: {
+      //     enabled: true,
+      //     command: 'npm run test:coverage -- --coverage.reporter=json-summary --coverage.reporter=text',
+      //     reportPath: 'coverage/coverage-summary.json',
+      //     format: 'istanbul-summary',
+      //     moduleGroups: [{ rootDir: 'src/utils', label: 'utils', segmentCount: 1 }],
+      //   },
+      // },
+    ],
   },
   externalSystems: [],
   safety: {

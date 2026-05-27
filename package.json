@@ -30,6 +30,7 @@
 
     "check:ai-readiness": "tsx scripts/check-ai-readiness.ts",
     "check:test-plan": "tsx scripts/check-test-plan-required.ts && tsx scripts/check-no-business-test-without-reviewed-plan.ts",
+    "check:unit-coverage": "tsx scripts/check-unit-test-coverage.ts",
     "check:safety": "tsx scripts/check-no-production-write.ts && tsx scripts/check-no-hardcoded-secret.ts",
     "check:lifecycle": "tsx scripts/check-generated-not-promoted.ts",
     "check:layering": "tsx scripts/check-spec-layering.ts",

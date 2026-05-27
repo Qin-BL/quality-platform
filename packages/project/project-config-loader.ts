@@ -122,6 +122,30 @@ export function validateProjectConfig(config: ProjectQCConfig): string[] {
         if (!gate.workingDir) {
           diagnostics.push(`unitTests.gates[${index}].workingDir is empty.`);
         }
+
+        if (gate.coverage?.enabled) {
+          if (!gate.coverage.command) {
+            diagnostics.push(`unitTests.gates[${index}].coverage.command is empty.`);
+          }
+          if (!gate.coverage.reportPath) {
+            diagnostics.push(`unitTests.gates[${index}].coverage.reportPath is empty.`);
+          }
+          if (!gate.coverage.format) {
+            diagnostics.push(`unitTests.gates[${index}].coverage.format is empty.`);
+          }
+          if (gate.coverage.moduleGroups.length === 0) {
+            diagnostics.push(
+              `unitTests.gates[${index}].coverage.moduleGroups must contain at least one rootDir.`
+            );
+          }
+          for (const [groupIndex, group] of gate.coverage.moduleGroups.entries()) {
+            if (!group.rootDir) {
+              diagnostics.push(
+                `unitTests.gates[${index}].coverage.moduleGroups[${groupIndex}].rootDir is empty.`
+              );
+            }
+          }
+        }
       }
     } else {
       if (!config.unitTests.command) {

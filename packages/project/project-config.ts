@@ -42,10 +42,45 @@ export interface ProjectUnitTestConfig {
   gates?: ProjectUnitTestGateConfig[];
 }
 
+export const UNIT_TEST_COVERAGE_FORMATS = [
+  'istanbul-summary',
+  'coverage.py-json',
+] as const;
+
+export type ProjectUnitTestCoverageFormat =
+  (typeof UNIT_TEST_COVERAGE_FORMATS)[number];
+
+export interface ProjectUnitTestCoverageThresholds {
+  lines?: number;
+  statements?: number;
+  functions?: number;
+  branches?: number;
+}
+
+export interface ProjectUnitTestCoverageModuleGroupConfig {
+  rootDir: string;
+  segmentCount?: number;
+  label?: string;
+  includeRootFilesAs?: string;
+}
+
+export interface ProjectUnitTestCoverageConfig {
+  enabled: boolean;
+  command: string;
+  reportPath: string;
+  format: ProjectUnitTestCoverageFormat;
+  workingDir?: string;
+  requiredToProceed?: boolean;
+  thresholds?: ProjectUnitTestCoverageThresholds;
+  minimumModuleLineCoverage?: number;
+  moduleGroups: ProjectUnitTestCoverageModuleGroupConfig[];
+}
+
 export interface ProjectUnitTestGateConfig {
   name: string;
   workingDir: string;
   command: string;
+  coverage?: ProjectUnitTestCoverageConfig;
 }
 
 export interface ProjectSafetyConfig {
@@ -65,6 +100,59 @@ export interface ProjectQCConfig {
   unitTests: ProjectUnitTestConfig;
   externalSystems: string[];
   safety: ProjectSafetyConfig;
+}
+
+function mergeCoverageConfig(
+  base?: ProjectUnitTestCoverageConfig,
+  override?: ProjectUnitTestCoverageConfig
+): ProjectUnitTestCoverageConfig | undefined {
+  if (!base) {
+    return override;
+  }
+
+  if (!override) {
+    return base;
+  }
+
+  return {
+    ...base,
+    ...override,
+    moduleGroups: override.moduleGroups.length > 0 ? override.moduleGroups : base.moduleGroups,
+  };
+}
+
+function mergeUnitTestGates(
+  baseGates?: ProjectUnitTestGateConfig[],
+  overrideGates?: ProjectUnitTestGateConfig[]
+): ProjectUnitTestGateConfig[] | undefined {
+  if (!overrideGates) {
+    return baseGates;
+  }
+
+  if (!baseGates || baseGates.length === 0) {
+    return overrideGates;
+  }
+
+  const merged = new Map<string, ProjectUnitTestGateConfig>();
+  for (const gate of baseGates) {
+    merged.set(gate.name, gate);
+  }
+
+  for (const gate of overrideGates) {
+    const existing = merged.get(gate.name);
+    if (!existing) {
+      merged.set(gate.name, gate);
+      continue;
+    }
+
+    merged.set(gate.name, {
+      ...existing,
+      ...gate,
+      coverage: mergeCoverageConfig(existing.coverage, gate.coverage),
+    });
+  }
+
+  return [...merged.values()];
 }
 
 export function isProjectEnvironment(value: string): value is ProjectEnvironment {
@@ -201,6 +289,7 @@ export function mergeProjectConfig(
     unitTests: {
       ...base.unitTests,
       ...override.unitTests,
+      gates: mergeUnitTestGates(base.unitTests.gates, override.unitTests?.gates),
     },
     externalSystems: override.externalSystems ?? base.externalSystems,
     safety: {

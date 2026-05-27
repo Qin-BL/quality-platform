@@ -46,6 +46,31 @@ export interface QCUnitTestGate {
   command: string;
   workingDir: string;
   notes: string;
+  coverage?: {
+    enabled: boolean;
+    requiredToProceed: boolean;
+    status: 'not_configured' | 'skipped' | 'passed' | 'failed' | 'blocked';
+    format: string;
+    command: string;
+    workingDir: string;
+    reportPath: string;
+    notes: string;
+    totals: {
+      lines?: { covered: number; total: number; pct: number; threshold?: number; meetsThreshold?: boolean };
+      statements?: { covered: number; total: number; pct: number; threshold?: number; meetsThreshold?: boolean };
+      functions?: { covered: number; total: number; pct: number; threshold?: number; meetsThreshold?: boolean };
+      branches?: { covered: number; total: number; pct: number; threshold?: number; meetsThreshold?: boolean };
+    };
+    modules: Array<{
+      name: string;
+      fileCount: number;
+      lines: { covered: number; total: number; pct: number; threshold?: number; meetsThreshold?: boolean };
+      statements?: { covered: number; total: number; pct: number; threshold?: number; meetsThreshold?: boolean };
+      functions?: { covered: number; total: number; pct: number; threshold?: number; meetsThreshold?: boolean };
+      branches?: { covered: number; total: number; pct: number; threshold?: number; meetsThreshold?: boolean };
+    }>;
+    violations: string[];
+  };
 }
 
 export interface QCReport {
@@ -135,6 +160,66 @@ export function formatQCReport(report: QCReport): string {
     }
   } else {
     lines.push('_(No unit test gates configured)_');
+  }
+  lines.push('', '## Unit Test Coverage');
+  const coverageGates = report.unitTestGates.filter((gate) => gate.coverage?.enabled);
+  if (coverageGates.length > 0) {
+    for (const gate of coverageGates) {
+      const coverage = gate.coverage!;
+      lines.push(`### ${gate.name}`);
+      lines.push(`- Status: ${coverage.status}`);
+      lines.push(`- Required To Proceed: ${coverage.requiredToProceed ? 'Yes' : 'No'}`);
+      lines.push(`- Format: ${coverage.format}`);
+      lines.push(`- Working Dir: ${coverage.workingDir}`);
+      lines.push(`- Report Path: ${coverage.reportPath}`);
+      lines.push(`- Command: ${coverage.command}`);
+      lines.push(`- Notes: ${coverage.notes}`);
+      if (coverage.totals.lines) {
+        lines.push(
+          `- Lines: ${coverage.totals.lines.pct}% (${coverage.totals.lines.covered}/${coverage.totals.lines.total})`
+        );
+      }
+      if (coverage.totals.statements) {
+        lines.push(
+          `- Statements: ${coverage.totals.statements.pct}% (${coverage.totals.statements.covered}/${coverage.totals.statements.total})`
+        );
+      }
+      if (coverage.totals.functions) {
+        lines.push(
+          `- Functions: ${coverage.totals.functions.pct}% (${coverage.totals.functions.covered}/${coverage.totals.functions.total})`
+        );
+      }
+      if (coverage.totals.branches) {
+        lines.push(
+          `- Branches: ${coverage.totals.branches.pct}% (${coverage.totals.branches.covered}/${coverage.totals.branches.total})`
+        );
+      }
+
+      if (coverage.modules.length > 0) {
+        lines.push('');
+        lines.push('| Module | Files | Lines | Statements | Functions | Branches |');
+        lines.push('|--------|-------|-------|------------|-----------|----------|');
+        for (const module of coverage.modules) {
+          lines.push(
+            `| ${module.name} | ${module.fileCount} | ${module.lines.pct}% (${module.lines.covered}/${module.lines.total}) | ${module.statements ? `${module.statements.pct}% (${module.statements.covered}/${module.statements.total})` : 'n/a'} | ${module.functions ? `${module.functions.pct}% (${module.functions.covered}/${module.functions.total})` : 'n/a'} | ${module.branches ? `${module.branches.pct}% (${module.branches.covered}/${module.branches.total})` : 'n/a'} |`
+          );
+        }
+      } else {
+        lines.push('- No module coverage data was aggregated.');
+      }
+
+      if (coverage.violations.length > 0) {
+        lines.push('');
+        lines.push('Violations:');
+        for (const violation of coverage.violations) {
+          lines.push(`- ${violation}`);
+        }
+      }
+
+      lines.push('');
+    }
+  } else {
+    lines.push('_(No unit test coverage configured)_');
   }
   lines.push('', '## Tests Selected');
   lines.push(`- Smoke: ${report.testsSelected.smoke}`);

@@ -9,6 +9,7 @@ export type AuditActionType =
   | 'asset_deprecated'
   | 'production_guard_check'
   | 'unit_test_precheck'
+  | 'unit_test_coverage'
   | 'external_system_access'
   | 'qc_request_analyzed'
   | 'qc_request_completed'

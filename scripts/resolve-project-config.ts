@@ -99,6 +99,19 @@ async function main(): Promise<void> {
       console.log(`  Gate: ${gate.name}`);
       console.log(`    Working Dir: ${gate.workingDir || '(not configured)'}`);
       console.log(`    Command: ${gate.command || '(not configured)'}`);
+      if (gate.coverage?.enabled) {
+        console.log('    Coverage:');
+        console.log(`      Working Dir: ${gate.coverage.workingDir || gate.workingDir}`);
+        console.log(`      Command: ${gate.coverage.command || '(not configured)'}`);
+        console.log(`      Report Path: ${gate.coverage.reportPath || '(not configured)'}`);
+        console.log(`      Format: ${gate.coverage.format}`);
+        console.log(
+          `      Required To Proceed: ${gate.coverage.requiredToProceed ? 'Yes' : 'No'}`
+        );
+        console.log(
+          `      Module Groups: ${gate.coverage.moduleGroups.map((group) => group.label ?? group.rootDir).join(', ')}`
+        );
+      }
     }
   } else {
     console.log(`  Working Dir: ${discovery.config.unitTests.workingDir || '(not configured)'}`);

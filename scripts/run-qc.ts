@@ -26,6 +26,10 @@ import {
 } from '../packages/project/project-discovery';
 import { parseQCCommand } from '../packages/project/qc-command-parser';
 import type { ProjectUnitTestGateConfig } from '../packages/project/project-config';
+import {
+  formatCoverageMetric,
+  runUnitTestCoverageGate,
+} from '../packages/project/unit-test-coverage';
 
 dotenvConfig();
 
@@ -298,6 +302,21 @@ async function main(): Promise<void> {
         command: gate.command,
         workingDir: gate.workingDir,
         notes: 'Unit test gate is configured and pending execution.',
+        coverage: gate.coverage?.enabled
+          ? {
+              enabled: true,
+              requiredToProceed: gate.coverage.requiredToProceed ?? false,
+              status: 'skipped',
+              format: gate.coverage.format,
+              command: gate.coverage.command,
+              workingDir: gate.coverage.workingDir ?? gate.workingDir,
+              reportPath: gate.coverage.reportPath,
+              notes: 'Unit test coverage is configured and pending execution.',
+              totals: {},
+              modules: [],
+              violations: [],
+            }
+          : undefined,
       }))
     : [
         {
@@ -365,6 +384,10 @@ async function main(): Promise<void> {
       console.log(`  - ${gate.name}`);
       console.log(`    Command: ${gate.command || '(not configured)'}`);
       console.log(`    Working Dir: ${gate.workingDir || '(not configured)'}`);
+      if (gate.coverage?.enabled) {
+        console.log(`    Coverage Command: ${gate.coverage.command}`);
+        console.log(`    Coverage Report: ${gate.coverage.reportPath}`);
+      }
     }
     console.log('');
 
@@ -392,6 +415,147 @@ async function main(): Promise<void> {
         blockingExitCode = gateResult.exitCode ?? 1;
       }
 
+      let coverage:
+        | {
+            enabled: true;
+            requiredToProceed: boolean;
+            status: 'not_configured' | 'skipped' | 'passed' | 'failed' | 'blocked';
+            format: string;
+            command: string;
+            workingDir: string;
+            reportPath: string;
+            notes: string;
+            totals: {
+              lines?: {
+                covered: number;
+                total: number;
+                pct: number;
+                threshold?: number;
+                meetsThreshold?: boolean;
+              };
+              statements?: {
+                covered: number;
+                total: number;
+                pct: number;
+                threshold?: number;
+                meetsThreshold?: boolean;
+              };
+              functions?: {
+                covered: number;
+                total: number;
+                pct: number;
+                threshold?: number;
+                meetsThreshold?: boolean;
+              };
+              branches?: {
+                covered: number;
+                total: number;
+                pct: number;
+                threshold?: number;
+                meetsThreshold?: boolean;
+              };
+            };
+            modules: Array<{
+              name: string;
+              fileCount: number;
+              lines: {
+                covered: number;
+                total: number;
+                pct: number;
+                threshold?: number;
+                meetsThreshold?: boolean;
+              };
+              statements?: {
+                covered: number;
+                total: number;
+                pct: number;
+                threshold?: number;
+                meetsThreshold?: boolean;
+              };
+              functions?: {
+                covered: number;
+                total: number;
+                pct: number;
+                threshold?: number;
+                meetsThreshold?: boolean;
+              };
+              branches?: {
+                covered: number;
+                total: number;
+                pct: number;
+                threshold?: number;
+                meetsThreshold?: boolean;
+              };
+            }>;
+            violations: string[];
+          }
+        | undefined;
+
+      if (gate.coverage?.enabled) {
+        if (gateResult.status === 'passed') {
+          const coverageResult = runUnitTestCoverageGate(gate, ROOT);
+          coverage = {
+            enabled: true,
+            requiredToProceed: coverageResult.requiredToProceed,
+            status: coverageResult.status,
+            format: gate.coverage.format,
+            command: coverageResult.command,
+            workingDir: coverageResult.workingDir,
+            reportPath: coverageResult.reportPath,
+            notes: coverageResult.notes,
+            totals: coverageResult.summary?.totals ?? {},
+            modules: coverageResult.summary?.modules ?? [],
+            violations: coverageResult.summary?.violations ?? [],
+          };
+
+          console.log(`Coverage Check: ${gate.name}`);
+          console.log(`  Status: ${coverageResult.status}`);
+          console.log(`  Report: ${coverageResult.reportPath}`);
+          console.log(
+            `  Lines: ${formatCoverageMetric(coverageResult.summary?.totals.lines)}`
+          );
+          if (coverageResult.summary?.violations.length) {
+            for (const violation of coverageResult.summary.violations) {
+              console.log(`  Violation: ${violation}`);
+            }
+          }
+          console.log('');
+
+          addToAuditTrail(
+            auditTrail,
+            createAuditEntry(
+              'unit_test_coverage',
+              'runner',
+              `${gate.name}: ${coverageResult.status}: ${coverageResult.notes}`,
+              coverageResult.status === 'passed' ? 'success' : 'warning',
+              cli.projectKey
+            )
+          );
+
+          if (
+            (coverageResult.status === 'failed' || coverageResult.status === 'blocked') &&
+            coverageResult.requiredToProceed &&
+            blockingExitCode === undefined
+          ) {
+            blockingExitCode = coverageResult.exitCode ?? 1;
+          }
+        } else {
+          coverage = {
+            enabled: true,
+            requiredToProceed: gate.coverage.requiredToProceed ?? false,
+            status: 'skipped',
+            format: gate.coverage.format,
+            command: gate.coverage.command,
+            workingDir: gate.coverage.workingDir ?? gate.workingDir,
+            reportPath: gate.coverage.reportPath,
+            notes: 'Coverage check skipped because the unit test gate did not pass.',
+            totals: {},
+            modules: [],
+            violations: [],
+          };
+        }
+      }
+
       return {
         name: gate.name,
         enabled: true,
@@ -400,6 +564,7 @@ async function main(): Promise<void> {
         command: gate.command,
         workingDir: gateResult.workingDir || gate.workingDir,
         notes: gateResult.notes,
+        coverage,
       };
     });
 
@@ -410,9 +575,17 @@ async function main(): Promise<void> {
         if (gate.status === 'failed' || gate.status === 'blocked') {
           report.risks.push(`Unit test gate ${gate.name} ${gate.status}: ${gate.notes}`);
         }
+        if (
+          gate.coverage &&
+          (gate.coverage.status === 'failed' || gate.coverage.status === 'blocked')
+        ) {
+          report.risks.push(
+            `Unit test coverage ${gate.name} ${gate.coverage.status}: ${gate.coverage.notes}`
+          );
+        }
       }
       report.nextSteps =
-        'Fix or rerun the upstream unit tests first. QC execution remains blocked until every required unit test gate passes.';
+        'Fix or rerun the upstream unit tests and required coverage checks first. QC execution remains blocked until every required gate passes.';
 
       console.log('At least one required unit test gate failed or is blocked. QC will not continue.');
       console.log('');
