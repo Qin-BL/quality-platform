@@ -57,6 +57,7 @@ npm run guard:all
 
 npm run project:resolve -- --project hiring
 npm run check:unit-coverage -- --project hiring
+npm run cleanup:test-artifacts -- --project hiring
 npm run auth:check -- --project hiring
 npm run auth:login -- --project hiring
 npm run qc -- --project hiring

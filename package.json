@@ -41,6 +41,7 @@
     "promote:test-asset": "tsx scripts/promote-test-asset.ts",
     "classify:failure": "tsx scripts/classify-failure.ts",
     "qc:summary": "tsx scripts/qc-summary.ts",
+    "cleanup:test-artifacts": "tsx scripts/cleanup-test-artifacts.ts",
     "guard:production": "tsx scripts/guard-production.ts",
     "guard:all": "npm run typecheck && npm run ai:check",
 
