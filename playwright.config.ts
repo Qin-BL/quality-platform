@@ -31,6 +31,9 @@ function resolveAuthStatePath(): string | undefined {
 
 const authStatePath = resolveAuthStatePath();
 const require = createRequire(import.meta.url);
+const configuredWorkers = process.env.PLAYWRIGHT_WORKERS
+  ? Number(process.env.PLAYWRIGHT_WORKERS)
+  : undefined;
 
 function resolveReporters(): ReporterDescription[] {
   const reporters: ReporterDescription[] = [
@@ -56,7 +59,7 @@ export default defineConfig({
   },
   forbidOnly: process.env.CI === 'true',
   retries: process.env.CI === 'true' ? 2 : 0,
-  workers: process.env.CI === 'true' ? 2 : undefined,
+  workers: configuredWorkers || (process.env.CI === 'true' ? 2 : 1),
   reporter: resolveReporters(),
   use: {
     baseURL: BASE_URL,
