@@ -37,6 +37,9 @@ const REQUIRED_ENTRIES: RequiredEntry[] = [
   { path: 'projects/README.md', type: 'file' },
   { path: 'projects/.gitkeep', type: 'file' },
 
+  { path: 'workspaces', type: 'directory' },
+  { path: 'workspaces/README.md', type: 'file' },
+
   { path: 'requests', type: 'directory' },
   { path: 'requests/README.md', type: 'file' },
   { path: 'requests/incoming/.gitkeep', type: 'file' },
@@ -86,6 +89,12 @@ const REQUIRED_ENTRIES: RequiredEntry[] = [
   { path: 'packages/project/project-discovery.ts', type: 'file' },
   { path: 'packages/project/qc-command-parser.ts', type: 'file' },
 
+  { path: 'packages/devflow/README.md', type: 'file' },
+  { path: 'packages/devflow/index.ts', type: 'file' },
+  { path: 'packages/devflow/workspace-config.ts', type: 'file' },
+  { path: 'packages/devflow/workspace-loader.ts', type: 'file' },
+  { path: 'packages/devflow/repo-state.ts', type: 'file' },
+
   { path: 'packages/auth/README.md', type: 'file' },
   { path: 'packages/auth/auth-config.ts', type: 'file' },
   { path: 'packages/auth/auth-state.ts', type: 'file' },
@@ -114,6 +123,10 @@ const REQUIRED_ENTRIES: RequiredEntry[] = [
   { path: 'packages/reporting/allure-helpers.ts', type: 'file' },
 
   { path: 'templates/project/AGENTS.template.md', type: 'file' },
+  { path: 'templates/workspace/workspace.config.template.ts', type: 'file' },
+  { path: 'templates/workspace/context/overview.template.md', type: 'file' },
+  { path: 'templates/workspace/context/repositories.template.md', type: 'file' },
+  { path: 'templates/workspace/context/environments.template.md', type: 'file' },
   { path: 'templates/project/config/project.config.template.ts', type: 'file' },
   { path: 'templates/project/config/local.template.ts', type: 'file' },
   { path: 'templates/project/config/staging.template.ts', type: 'file' },
@@ -160,9 +173,16 @@ const REQUIRED_ENTRIES: RequiredEntry[] = [
   { path: 'docs/qa/autonomous-qc-roadmap.md', type: 'file' },
   { path: 'docs/qa/best-practices.md', type: 'file' },
 
+  { path: 'docs/devflow/architecture.md', type: 'file' },
+
   { path: 'scripts/validate-structure.ts', type: 'file' },
   { path: 'scripts/create-project-space.ts', type: 'file' },
+  { path: 'scripts/create-dev-workspace.ts', type: 'file' },
   { path: 'scripts/resolve-project-config.ts', type: 'file' },
+  { path: 'scripts/resolve-dev-workspace.ts', type: 'file' },
+  { path: 'scripts/plan-ai-dev.ts', type: 'file' },
+  { path: 'scripts/prepare-dev-branches.ts', type: 'file' },
+  { path: 'scripts/sync-framework-mirror.ts', type: 'file' },
   { path: 'scripts/run-qc.ts', type: 'file' },
   { path: 'scripts/auth-login.ts', type: 'file' },
   { path: 'scripts/check-auth-state.ts', type: 'file' },

@@ -13,6 +13,8 @@ allure-results/
 allure-report/
 reports/**/*.local.*
 traces/**/*.local.*
+workspaces/*/generated/*.md
+workspaces/*/generated/*.json
 dist/
 *.log
 .DS_Store
