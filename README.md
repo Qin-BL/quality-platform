@@ -201,6 +201,51 @@ For local secret reuse, the framework also supports `.secrets/<project-key>/<TES
 - `scripts/`: CLI entry points for QC, auth, orchestration, healing, and reporting
 - `docs/qa/`: deeper architecture and operating documentation
 
+## Documentation Map
+
+::: mermaid
+graph TD
+    A["README"] --> B["Architecture"]
+    A --> C["AI QC Workflow"]
+    A --> D["Project Config Discovery"]
+    A --> E["Auth Bootstrap"]
+    A --> F["Healing Strategy"]
+    A --> G["Test Asset Lifecycle"]
+    A --> H["Playwright MCP Strategy"]
+    A --> I["Production Safety"]
+    A --> J["Autonomous QC Roadmap"]
+
+    B --> B1["What the platform is"]
+    C --> C1["How one request expands into QC"]
+    D --> D1["How config is found automatically"]
+    E --> E1["How auth is checked and resumed"]
+    F --> F1["How failures become governed fixes"]
+    G --> G1["How assets move from generated to promoted"]
+    H --> H1["How exploration stays governed"]
+    I --> I1["How production write stays blocked"]
+    J --> J1["How autonomy grows over time"]
+
+    classDef root fill:#eef6ff,stroke:#4a90e2,color:#16324f,stroke-width:1.5px;
+    classDef doc fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef purpose fill:#eefbf3,stroke:#2f9e44,color:#16351f,stroke-width:1.5px;
+    class A root;
+    class B,C,D,E,F,G,H,I,J doc;
+    class B1,C1,D1,E1,F1,G1,H1,I1,J1 purpose;
+:::
+
+Suggested reading order:
+
+1. `README.md`
+2. `docs/qa/architecture.md`
+3. `docs/qa/ai-qc-workflow.md`
+4. `docs/qa/project-config-discovery.md`
+5. `docs/qa/auth-bootstrap.md`
+6. `docs/qa/healing-strategy.md`
+7. `docs/qa/test-asset-lifecycle.md`
+8. `docs/qa/playwright-mcp-strategy.md`
+9. `docs/qa/production-safety.md`
+10. `docs/qa/autonomous-qc-roadmap.md`
+
 ## Current Status
 
 This repository currently contains **framework only**:
