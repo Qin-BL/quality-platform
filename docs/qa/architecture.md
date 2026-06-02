@@ -6,6 +6,14 @@ It owns governed QC workflows such as E2E, API, visual, external verification, a
 It does not own unit tests for internal product code. Unit tests remain the responsibility of each concrete application or service repository.
 When a project config points to an existing upstream unit-test command, this platform treats that command as a pre-QC gate and stops before QC if the gate fails.
 
+Recent framework upgrades add five runtime-grade capabilities:
+
+1. failure attribution and healing-loop analysis
+2. test environment and data orchestration
+3. MCP exploration manifests as executable runtime artifacts
+4. app-map based coverage-gap reporting
+5. missing-input detection with resumable blocked-state files
+
 ## Layers
 
 1. AI Layer: planner, generator, explorer, runner, healer, reporter, governance.

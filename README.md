@@ -22,6 +22,16 @@ It is not:
 - A repo for changing or backfilling business-project internal unit-test suites
 - A home for real business selectors, endpoints, or production write workflows in tracked files
 
+## Advanced Runtime Capabilities
+
+The framework now includes first-class support for:
+
+- Failure attribution and healing-loop analysis
+- Test data and environment orchestration
+- MCP exploration manifests and artifact recording
+- App-map and coverage-gap reporting
+- Missing-input detection with resumable blocked-state files
+
 ## One-line Usage
 
 Future users should be able to say:
@@ -57,6 +67,9 @@ npm run guard:all
 
 npm run project:resolve -- --project hiring
 npm run check:unit-coverage -- --project hiring
+npm run orchestrate:test-env -- --project hiring
+npm run check:app-map -- --project hiring
+npm run mcp:explore -- --project hiring --request "Explore auth and dashboard"
 npm run cleanup:test-artifacts -- --project hiring
 npm run auth:check -- --project hiring
 npm run auth:login -- --project hiring

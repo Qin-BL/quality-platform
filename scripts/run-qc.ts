@@ -4,18 +4,28 @@ import { fileURLToPath } from 'url';
 import { spawnSync } from 'child_process';
 import { config as dotenvConfig } from 'dotenv';
 import { validateAiTaskContract } from '../packages/ai/ai-task-contract';
+import {
+  createMissingInput,
+  createMissingInputState,
+  formatMissingInputQuestions,
+  writeMissingInputState,
+  type MissingInput,
+} from '../packages/ai/missing-inputs';
 import { createAuditEntry, createAuditTrail, addToAuditTrail } from '../packages/reporting/audit-log';
 import { prepareAuthBootstrap, bootstrapAuth } from '../packages/auth/auth-bootstrap';
-import { resolveAuthConfig } from '../packages/auth/auth-config';
+import { resolveAuthConfig, validateAuthConfig } from '../packages/auth/auth-config';
 import { checkAuthState } from '../packages/auth/auth-state';
 import { isProductionSmoke } from '../packages/auth/auth-guards';
 import { buildTagExpression } from '../packages/core/test-tags';
 import { FAILURE_CATEGORIES } from '../packages/healing/failure-classifier';
+import { runProjectOrchestration } from '../packages/fixtures/environment-orchestration';
+import { createMCPExplorationRun, writeMCPExplorationManifest } from '../packages/mcp/runtime';
 import { createQCReport, formatQCReport } from '../packages/reporting/qc-report';
 import {
   discoverProjectConfig,
   formatProjectConfigDiscovery,
 } from '../packages/project/project-config-loader';
+import { buildAppMapCoverageSummary } from '../packages/project/app-map';
 import {
   detectProjectKeyFromText,
   getContextLabelFromPath,
@@ -142,6 +152,14 @@ function writeReport(projectKey: string, report: string): string {
   return outputPath;
 }
 
+function printMissingInputBlock(missingInputs: MissingInput[], statePath: string): void {
+  console.log('Missing Required Inputs:');
+  for (const line of formatMissingInputQuestions(missingInputs)) {
+    console.log(`  ${line}`);
+  }
+  console.log(`Resume state written to: ${statePath}`);
+}
+
 function runUnitTestGate(gate: ProjectUnitTestGateConfig): {
   status: 'not_configured' | 'skipped' | 'passed' | 'failed' | 'blocked';
   workingDir: string;
@@ -219,15 +237,56 @@ async function main(): Promise<void> {
   console.log('=========');
 
   if (!cli.projectKey) {
+    const blockedState = createMissingInputState(
+      parsedCommand.intent,
+      cli.env,
+      cli.rawText,
+      'project-key-detection',
+      [
+        createMissingInput(
+          'project_key',
+          'Which project key should be used for this QC run?',
+          'The request did not include a detectable project key.',
+          'project-config-discovery',
+          {
+            label: 'Project key',
+            suggestedSources: ['projects/<project-key>', 'PROJECT_KEY', 'user request text'],
+          }
+        ),
+      ]
+    );
+    const statePath = writeMissingInputState(blockedState, ROOT);
     console.log('No project key detected.');
     console.log('Usage: npm run qc -- --project <project-key>');
     console.log('   or: "Run hiring QC according to AGENTS.md."');
+    printMissingInputBlock(blockedState.missingInputs, statePath);
     process.exit(1);
   }
 
   if (!projectExists(cli.projectKey, ROOT)) {
+    const blockedState = createMissingInputState(
+      parsedCommand.intent,
+      cli.env,
+      cli.rawText,
+      'project-space-check',
+      [
+        createMissingInput(
+          'project_space',
+          `Project '${cli.projectKey}' does not exist yet. Should the framework create the project space now?`,
+          `No project directory was found for '${cli.projectKey}'.`,
+          'project-space-create',
+          {
+            label: 'Project space',
+            suggestedSources: ['npm run create:project -- --project <project-key>'],
+          }
+        ),
+      ],
+      cli.projectKey
+    );
+    const statePath = writeMissingInputState(blockedState, ROOT);
     console.log(`Project '${cli.projectKey}' does not exist.`);
     console.log(`Create it with: npm run create:project -- --project ${cli.projectKey}`);
+    printMissingInputBlock(blockedState.missingInputs, statePath);
     process.exit(1);
   }
 
@@ -245,6 +304,26 @@ async function main(): Promise<void> {
     : [];
   const selectedTags = selectTags(cli.release, cli.env, discovery.config.tests);
   const configuredUnitTestGates = getConfiguredUnitTestGates(discovery.config.unitTests);
+  const authValidation = validateAuthConfig(authConfig);
+  const orchestrationResult = await runProjectOrchestration(
+    discovery.config.orchestration,
+    ROOT
+  );
+  const appMapCoverage = buildAppMapCoverageSummary(
+    discovery.config.appMap,
+    discovery.config.tests.testDir,
+    discovery.config.context.testPlansReviewedDir,
+    ROOT
+  );
+  const mcpRun = discovery.config.mcp.enabled
+    ? createMCPExplorationRun(
+        cli.projectKey,
+        cli.env,
+        cli.rawText || `Run ${cli.projectKey} QC according to AGENTS.md.`,
+        discovery.config.mcp,
+        ROOT
+      )
+    : null;
   const testsDir = resolveTestsDir(cli.projectKey, ROOT);
   const grepExpression = buildTagExpression(selectedTags);
   const qcCommand = [
@@ -254,6 +333,7 @@ async function main(): Promise<void> {
     testsDir,
     ...(grepExpression ? ['--grep', grepExpression] : []),
   ];
+  const mcpManifestPath = mcpRun ? writeMCPExplorationManifest(mcpRun) : '';
 
   const contract = validateAiTaskContract({
     intent: parsedCommand.intent === 'generate_test_plan' ? 'generate-test-plan' : 'run-qc',
@@ -280,6 +360,11 @@ async function main(): Promise<void> {
   console.log(
     `Unit Test Gates: ${configuredUnitTestGates.length > 0 ? configuredUnitTestGates.length : 0}`
   );
+  console.log(`Environment Orchestration: ${orchestrationResult.enabled ? orchestrationResult.status : 'not configured'}`);
+  console.log(
+    `App Map Coverage: ${appMapCoverage.enabled ? `${appMapCoverage.coveredModules}/${appMapCoverage.totalModules}` : 'not configured'}`
+  );
+  console.log(`MCP Runtime: ${mcpRun ? `prepared (${mcpManifestPath})` : 'not configured'}`);
   console.log(`AI Task State: ${contract.workflowState}`);
   console.log('');
 
@@ -332,6 +417,34 @@ async function main(): Promise<void> {
   report.testsSelected = countSelectedTests(selectedTags);
   report.testsGenerated = {};
   report.testsExecuted = { total: 0, passed: 0, failed: 0, skipped: 0, duration: 0 };
+  report.appCoverage = {
+    enabled: appMapCoverage.enabled,
+    totalModules: appMapCoverage.totalModules,
+    coveredModules: appMapCoverage.coveredModules,
+    uncoveredModules: appMapCoverage.uncoveredModules,
+    modules: appMapCoverage.modules.map((module) => ({
+      key: module.key,
+      displayName: module.displayName,
+      kind: module.kind,
+      critical: module.critical,
+      covered: module.covered,
+      matchingTests: module.matchingTests.length,
+      matchingPlans: module.matchingPlans.length,
+    })),
+  };
+  report.orchestration = {
+    enabled: orchestrationResult.enabled,
+    status: orchestrationResult.status,
+    environmentChecks: orchestrationResult.environmentChecks,
+    dataDependencies: orchestrationResult.dataDependencies,
+  };
+  report.mcpRun = {
+    enabled: Boolean(mcpRun),
+    status: mcpRun ? mcpRun.status : 'skipped',
+    manifestPath: mcpManifestPath,
+    artifactDir: mcpRun?.artifactDir || '',
+    sessionName: mcpRun?.sessionName || '',
+  };
   report.risks = [];
   report.healingSuggestions = [];
   report.externalSystems = [];
@@ -345,12 +458,26 @@ async function main(): Promise<void> {
     report.risks.push(`Auth state not ready: ${authStatus.reason}`);
   }
 
+  for (const issue of authValidation.issues) {
+    report.risks.push(issue);
+  }
+
   if (reviewedTestPlans.length === 0) {
     report.risks.push('No reviewed test plan exists yet.');
   }
 
   if (isProductionSmoke(cli.env)) {
     report.risks.push('production-smoke is readonly only. Only @readonly @smoke tags are permitted.');
+  }
+
+  if (orchestrationResult.status === 'failed') {
+    report.risks.push('Environment orchestration detected missing readiness checks or data dependencies.');
+  }
+
+  if (appMapCoverage.enabled && appMapCoverage.uncoveredModules > 0) {
+    report.risks.push(
+      `${appMapCoverage.uncoveredModules} app-map module(s) have no detected test or reviewed-plan coverage.`
+    );
   }
 
   const auditTrail = createAuditTrail('run-qc.ts');
@@ -377,6 +504,117 @@ async function main(): Promise<void> {
     );
   }
   report.auditTrail = auditTrail;
+
+  const missingInputs: MissingInput[] = [];
+
+  if (existingContext.length === 0) {
+    missingInputs.push(
+      createMissingInput(
+        'context',
+        `Which context files or product notes should be used for project '${cli.projectKey}'?`,
+        'No project context files were detected.',
+        'context-read',
+        {
+          label: 'Project context',
+          suggestedSources: contextPaths,
+        }
+      )
+    );
+  }
+
+  if (
+    discovery.config.safety.requireReviewedTestPlan &&
+    reviewedTestPlans.length === 0
+  ) {
+    missingInputs.push(
+      createMissingInput(
+        'reviewed_test_plan',
+        `Which reviewed test plan should govern QC for project '${cli.projectKey}'?`,
+        'No reviewed test plan was found for a workflow that requires reviewed governance.',
+        'reviewed-test-plan-check',
+        {
+          label: 'Reviewed test plan',
+          suggestedSources: [reviewedDir],
+        }
+      )
+    );
+  }
+
+  for (const issue of authValidation.issues) {
+    if (issue.includes('loginUrl is not configured')) {
+      missingInputs.push(
+        createMissingInput(
+          'auth_login_url',
+          `What login URL should auth bootstrap use for project '${cli.projectKey}' in ${cli.env}?`,
+          issue,
+          'auth-config-resolution',
+          {
+            label: 'Auth login URL',
+            suggestedSources: ['project config', '.env', authConfig.localConfigPath],
+          }
+        )
+      );
+    }
+    if (issue.includes('TEST_USER_EMAIL') || issue.includes('TEST_USER_PASSWORD')) {
+      missingInputs.push(
+        createMissingInput(
+          'auth_credentials',
+          `Which local auth credentials should be stored for project '${cli.projectKey}' in ${cli.env}?`,
+          issue,
+          'auth-bootstrap',
+          {
+            label: 'Local auth credentials',
+            sensitive: true,
+            suggestedSources: [authConfig.localConfigPath],
+          }
+        )
+      );
+    }
+  }
+
+  if (orchestrationResult.status === 'failed') {
+    const failingDependency = orchestrationResult.dataDependencies.find(
+      (dependency) => dependency.status === 'missing' || dependency.status === 'failed'
+    );
+    if (failingDependency) {
+      missingInputs.push(
+        createMissingInput(
+          'test_data',
+          `What test data or provisioning command should satisfy '${failingDependency.name}' for project '${cli.projectKey}'?`,
+          failingDependency.detail,
+          'test-data-orchestration',
+          {
+            label: 'Test data dependency',
+          }
+        )
+      );
+    }
+  }
+
+  if (missingInputs.length > 0) {
+    const blockedState = createMissingInputState(
+      parsedCommand.intent,
+      cli.env,
+      cli.rawText,
+      missingInputs[0].resumeStep,
+      missingInputs,
+      cli.projectKey
+    );
+    const statePath = writeMissingInputState(blockedState, ROOT);
+    report.blockedState = blockedState;
+    report.summary =
+      'QC paused because required configuration or governed inputs are missing.';
+    report.nextSteps =
+      'Provide the missing inputs, keep them in local ignored files when sensitive, and resume the same QC request.';
+
+    console.log('QC cannot continue yet because required inputs are missing.');
+    printMissingInputBlock(missingInputs, statePath);
+    console.log('');
+
+    const blockedReportPath = writeReport(cli.projectKey, formatQCReport(report));
+    console.log(`QC report written to: ${blockedReportPath}`);
+    process.exit(1);
+  }
 
   if (configuredUnitTestGates.length > 0) {
     console.log('Unit Test Precheck:');

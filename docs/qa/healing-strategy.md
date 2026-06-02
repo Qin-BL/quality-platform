@@ -75,4 +75,21 @@ Every failure is classified into one of:
 
 ---
 
-*Phase 1: Strategy definition. AI healing not yet active.*
+## Closed Loop Runtime
+
+The healing layer is now backed by framework code, not strategy text only.
+
+Current runtime capabilities:
+
+1. classify failures into governed categories
+2. infer healing suggestions with allowed fix types
+3. analyze Playwright error-context files
+4. feed failure and healing information into QC reporting
+
+Use:
+
+`npm run classify:failure -- --test "<name>" --error "<message>"`
+
+or
+
+`npm run classify:failure -- --test "<name>" --context-file "<path>"`

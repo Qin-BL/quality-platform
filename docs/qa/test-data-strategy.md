@@ -61,3 +61,17 @@ export const createTestUser = (overrides?: Partial<User>) => ({
 | Local | Allowed | Automatic | Factories + API |
 | Staging | Allowed | Automatic | Factories + API |
 | Production | FORBIDDEN | N/A | Readonly existing data |
+
+## Orchestration Layer
+
+Project config can now declare:
+
+- environment readiness checks
+- required data dependencies
+- optional provision commands
+
+Use:
+
+`npm run orchestrate:test-env -- --project <project-key>`
+
+This moves test-environment readiness and shared data expectations into governed configuration instead of scattering them across specs.

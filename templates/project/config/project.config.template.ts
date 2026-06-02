@@ -48,6 +48,24 @@ const config: ProjectQCConfig = {
       // },
     ],
   },
+  orchestration: {
+    enabled: false,
+    requiredToProceed: true,
+    environmentChecks: [],
+    dataDependencies: [],
+  },
+  mcp: {
+    enabled: false,
+    baseUrl: '',
+    allowedDomains: [],
+    readonly: true,
+    recordDir: 'reports/audit/mcp',
+    defaultSessionName: 'Explore __PROJECT_KEY__',
+  },
+  appMap: {
+    enabled: false,
+    modules: [],
+  },
   externalSystems: [],
   safety: {
     readonly: false,

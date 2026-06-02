@@ -90,6 +90,64 @@ export interface ProjectSafetyConfig {
   requireReviewedTestPlan: boolean;
 }
 
+export type ProjectEnvironmentCheckKind = 'command' | 'file_exists' | 'http_get';
+
+export interface ProjectEnvironmentCheckConfig {
+  name: string;
+  kind: ProjectEnvironmentCheckKind;
+  target: string;
+  successPattern?: string;
+  timeoutMs?: number;
+  notes?: string;
+}
+
+export interface ProjectDataDependencyConfig {
+  name: string;
+  required: boolean;
+  checkCommand?: string;
+  provisionCommand?: string;
+  notes?: string;
+}
+
+export interface ProjectOrchestrationConfig {
+  enabled: boolean;
+  requiredToProceed: boolean;
+  environmentChecks: ProjectEnvironmentCheckConfig[];
+  dataDependencies: ProjectDataDependencyConfig[];
+}
+
+export interface ProjectMCPConfig {
+  enabled: boolean;
+  baseUrl: string;
+  allowedDomains: string[];
+  readonly: boolean;
+  recordDir: string;
+  defaultSessionName: string;
+}
+
+export type ProjectAppMapModuleKind =
+  | 'auth'
+  | 'ui'
+  | 'api'
+  | 'workflow'
+  | 'external'
+  | 'data';
+
+export interface ProjectAppMapModuleConfig {
+  key: string;
+  displayName: string;
+  kind: ProjectAppMapModuleKind;
+  aliases: string[];
+  routes: string[];
+  apiPatterns: string[];
+  critical: boolean;
+}
+
+export interface ProjectAppMapConfig {
+  enabled: boolean;
+  modules: ProjectAppMapModuleConfig[];
+}
+
 export interface ProjectQCConfig {
   projectKey: string;
   displayName: string;
@@ -98,6 +156,9 @@ export interface ProjectQCConfig {
   tests: ProjectTestConfig;
   context: ProjectContextConfig;
   unitTests: ProjectUnitTestConfig;
+  orchestration: ProjectOrchestrationConfig;
+  mcp: ProjectMCPConfig;
+  appMap: ProjectAppMapConfig;
   externalSystems: string[];
   safety: ProjectSafetyConfig;
 }
@@ -208,6 +269,12 @@ export const SAFE_DEFAULTS = {
   reportDir: 'reports/qc',
   unitTestsEnabled: false,
   unitTestsRequiredToProceed: true,
+  orchestrationEnabled: false,
+  orchestrationRequiredToProceed: true,
+  mcpEnabled: false,
+  mcpReadonly: true,
+  mcpRecordDir: 'reports/audit/mcp',
+  appMapEnabled: false,
 };
 
 function getDefaultAuthMode(environment: ProjectEnvironment): ProjectAuthMode {
@@ -255,6 +322,24 @@ export function createDefaultProjectConfig(
       command: '',
       requiredToProceed: SAFE_DEFAULTS.unitTestsRequiredToProceed,
     },
+    orchestration: {
+      enabled: SAFE_DEFAULTS.orchestrationEnabled,
+      requiredToProceed: SAFE_DEFAULTS.orchestrationRequiredToProceed,
+      environmentChecks: [],
+      dataDependencies: [],
+    },
+    mcp: {
+      enabled: SAFE_DEFAULTS.mcpEnabled,
+      baseUrl: '',
+      allowedDomains: [],
+      readonly: SAFE_DEFAULTS.mcpReadonly,
+      recordDir: SAFE_DEFAULTS.mcpRecordDir,
+      defaultSessionName: `Explore ${projectKey}`,
+    },
+    appMap: {
+      enabled: SAFE_DEFAULTS.appMapEnabled,
+      modules: [],
+    },
     externalSystems: [],
     safety: {
       readonly,
@@ -290,6 +375,24 @@ export function mergeProjectConfig(
       ...base.unitTests,
       ...override.unitTests,
       gates: mergeUnitTestGates(base.unitTests.gates, override.unitTests?.gates),
+    },
+    orchestration: {
+      ...base.orchestration,
+      ...override.orchestration,
+      environmentChecks:
+        override.orchestration?.environmentChecks ?? base.orchestration.environmentChecks,
+      dataDependencies:
+        override.orchestration?.dataDependencies ?? base.orchestration.dataDependencies,
+    },
+    mcp: {
+      ...base.mcp,
+      ...override.mcp,
+      allowedDomains: override.mcp?.allowedDomains ?? base.mcp.allowedDomains,
+    },
+    appMap: {
+      ...base.appMap,
+      ...override.appMap,
+      modules: override.appMap?.modules ?? base.appMap.modules,
     },
     externalSystems: override.externalSystems ?? base.externalSystems,
     safety: {

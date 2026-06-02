@@ -8,6 +8,7 @@ import {
   discoverProjectConfig,
   formatProjectConfigDiscovery,
 } from '../packages/project/project-config-loader';
+import { buildAppMapCoverageSummary } from '../packages/project/app-map';
 import {
   getContextLabelFromPath,
   resolveContextPaths,
@@ -59,6 +60,12 @@ async function main(): Promise<void> {
   const authConfig = resolveAuthConfig(projectKey, env, discovery.config.auth, ROOT);
   const authStatus = checkAuthState(authConfig, ROOT);
   const contextPaths = resolveContextPaths(projectKey, ROOT);
+  const appMapCoverage = buildAppMapCoverageSummary(
+    discovery.config.appMap,
+    discovery.config.tests.testDir,
+    discovery.config.context.testPlansReviewedDir,
+    ROOT
+  );
 
   console.log('Resolved Paths:');
   console.log(`  Project Root: ${discovery.projectRoot}`);
@@ -116,6 +123,37 @@ async function main(): Promise<void> {
   } else {
     console.log(`  Working Dir: ${discovery.config.unitTests.workingDir || '(not configured)'}`);
     console.log(`  Command: ${discovery.config.unitTests.command || '(not configured)'}`);
+  }
+  console.log('');
+  console.log('Environment Orchestration:');
+  console.log(`  Enabled: ${discovery.config.orchestration.enabled}`);
+  console.log(
+    `  Required To Proceed: ${discovery.config.orchestration.requiredToProceed}`
+  );
+  for (const check of discovery.config.orchestration.environmentChecks) {
+    console.log(`  Env Check: ${check.name} (${check.kind}) -> ${check.target}`);
+  }
+  for (const dependency of discovery.config.orchestration.dataDependencies) {
+    console.log(`  Data Dependency: ${dependency.name} (required=${dependency.required})`);
+  }
+  console.log('');
+  console.log('MCP Runtime:');
+  console.log(`  Enabled: ${discovery.config.mcp.enabled}`);
+  console.log(`  Base URL: ${discovery.config.mcp.baseUrl || '(not configured)'}`);
+  console.log(
+    `  Allowed Domains: ${discovery.config.mcp.allowedDomains.join(', ') || '(not configured)'}`
+  );
+  console.log(`  Record Dir: ${discovery.config.mcp.recordDir}`);
+  console.log('');
+  console.log('App Map:');
+  console.log(`  Enabled: ${discovery.config.appMap.enabled}`);
+  console.log(
+    `  Coverage: ${appMapCoverage.enabled ? `${appMapCoverage.coveredModules}/${appMapCoverage.totalModules}` : '(not configured)'}`
+  );
+  for (const module of appMapCoverage.modules) {
+    console.log(
+      `  Module: ${module.displayName} -> ${module.covered ? 'covered' : 'gap'}`
+    );
   }
 }
 

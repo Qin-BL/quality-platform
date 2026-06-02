@@ -158,6 +158,48 @@ export function validateProjectConfig(config: ProjectQCConfig): string[] {
     }
   }
 
+  if (config.orchestration.enabled) {
+    for (const [index, check] of config.orchestration.environmentChecks.entries()) {
+      if (!check.name) {
+        diagnostics.push(`orchestration.environmentChecks[${index}].name is empty.`);
+      }
+      if (!check.target) {
+        diagnostics.push(`orchestration.environmentChecks[${index}].target is empty.`);
+      }
+    }
+
+    for (const [index, dependency] of config.orchestration.dataDependencies.entries()) {
+      if (!dependency.name) {
+        diagnostics.push(`orchestration.dataDependencies[${index}].name is empty.`);
+      }
+      if (dependency.required && !dependency.checkCommand && !dependency.provisionCommand) {
+        diagnostics.push(
+          `orchestration.dataDependencies[${index}] is required but has no checkCommand or provisionCommand.`
+        );
+      }
+    }
+  }
+
+  if (config.mcp.enabled) {
+    if (!config.mcp.recordDir) {
+      diagnostics.push('mcp.recordDir is empty while mcp.enabled=true.');
+    }
+    if (!config.mcp.readonly) {
+      diagnostics.push('mcp.readonly must remain true for governed exploration.');
+    }
+  }
+
+  if (config.appMap.enabled) {
+    for (const [index, module] of config.appMap.modules.entries()) {
+      if (!module.key) {
+        diagnostics.push(`appMap.modules[${index}].key is empty.`);
+      }
+      if (!module.displayName) {
+        diagnostics.push(`appMap.modules[${index}].displayName is empty.`);
+      }
+    }
+  }
+
   return diagnostics;
 }
 

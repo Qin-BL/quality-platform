@@ -11,11 +11,14 @@ const REQUIRED_PATHS = [
   'skills/qc/SKILL.md',
   'packages/ai/ai-task-contract.md',
   'packages/ai/ai-task-contract.ts',
+  'packages/ai/missing-inputs.ts',
   'packages/ai/ai-task-state-machine.md',
   'packages/ai/simple-usage-guide.md',
   'templates/project',
   'packages/project',
   'packages/auth',
+  'packages/mcp/runtime.ts',
+  'packages/healing/healing-loop.ts',
 ];
 
 function main(): void {
@@ -42,7 +45,9 @@ function main(): void {
     process.exit(1);
   }
 
-  console.log('✅ AI readiness check PASSED — governance, discovery, and auth foundations are present.');
+  console.log(
+    '✅ AI readiness check PASSED — governance, discovery, auth, missing-input handling, and runtime foundations are present.'
+  );
 }
 
 main();

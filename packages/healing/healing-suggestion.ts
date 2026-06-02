@@ -45,6 +45,9 @@ export interface FailureLike {
     | 'product_bug'
     | 'test_bug'
     | 'environment_issue'
+    | 'auth_issue'
+    | 'selector_drift'
+    | 'unit_regression'
     | 'flaky'
     | 'data_issue'
     | 'external_dependency'
@@ -81,9 +84,30 @@ export function suggestHealingForFailure(failure: FailureLike): HealingSuggestio
     case 'test_bug':
       return createHealingSuggestion(
         failure.testName,
+        'fixture_fix',
+        'Repair the fixture, helper, or client abstraction so the spec can remain orchestration-only.',
+        'medium'
+      );
+    case 'selector_drift':
+      return createHealingSuggestion(
+        failure.testName,
         'selector_update',
         'Review page objects and move brittle inline selectors or actions into reusable page abstractions.',
         'medium'
+      );
+    case 'auth_issue':
+      return createHealingSuggestion(
+        failure.testName,
+        'fixture_fix',
+        'Refresh auth bootstrap inputs, validate storage state reuse, and keep secrets in local ignored config files.',
+        'medium'
+      );
+    case 'unit_regression':
+      return createHealingSuggestion(
+        failure.testName,
+        'client_fix',
+        'Stop downstream QC, repair the upstream unit-test or coverage regression, and resume only after the gate passes.',
+        'high'
       );
     case 'flaky':
       return createHealingSuggestion(

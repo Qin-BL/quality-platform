@@ -2,6 +2,9 @@ export type FailureType =
   | 'product_bug'
   | 'test_bug'
   | 'environment_issue'
+  | 'auth_issue'
+  | 'selector_drift'
+  | 'unit_regression'
   | 'flaky'
   | 'data_issue'
   | 'external_dependency'
@@ -28,6 +31,21 @@ export const FAILURE_CATEGORIES: Record<FailureType, FailureCategory> = {
     type: 'environment_issue',
     description: 'Environment configuration or service readiness problem.',
     action: 'Fix environment readiness, auth bootstrap, or config.',
+  },
+  auth_issue: {
+    type: 'auth_issue',
+    description: 'Auth bootstrap, session reuse, or credential flow is invalid.',
+    action: 'Repair auth bootstrap inputs, refresh auth state, or re-validate session guards.',
+  },
+  selector_drift: {
+    type: 'selector_drift',
+    description: 'The product surface changed and locator abstractions are stale.',
+    action: 'Update page-object selectors using reviewed UI evidence. Do not weaken assertions.',
+  },
+  unit_regression: {
+    type: 'unit_regression',
+    description: 'Upstream unit-test gate failed before QC or indicates a code regression.',
+    action: 'Stop QC, fix the upstream code or unit tests first, then rerun governed QC.',
   },
   flaky: {
     type: 'flaky',
@@ -67,6 +85,23 @@ export function classifyFailure(
   const lower = errorMessage.toLowerCase();
 
   if (
+    lower.includes('401') ||
+    lower.includes('403') ||
+    lower.includes('unauthorized') ||
+    lower.includes('forbidden') ||
+    lower.includes('auth state') ||
+    lower.includes('storage state')
+  ) {
+    return {
+      testName,
+      type: 'auth_issue',
+      evidence: artifacts,
+      rootCause: 'The failure points to invalid auth state, auth bootstrap, or restricted session scope.',
+      confidence: 'high',
+    };
+  }
+
+  if (
     lower.includes('timeout') ||
     lower.includes('retry') ||
     lower.includes('networkidle')
@@ -84,13 +119,44 @@ export function classifyFailure(
     lower.includes('locator') ||
     lower.includes('selector') ||
     lower.includes('strict mode violation') ||
-    lower.includes('element is not attached')
+    lower.includes('element is not attached') ||
+    lower.includes('to be visible')
+  ) {
+    return {
+      testName,
+      type: 'selector_drift',
+      evidence: artifacts,
+      rootCause: 'The locator or UI contract has drifted away from the current rendered surface.',
+      confidence: 'high',
+    };
+  }
+
+  if (
+    lower.includes('vitest') ||
+    lower.includes('jest') ||
+    lower.includes('pytest') ||
+    lower.includes('unit test gate') ||
+    lower.includes('coverage threshold')
+  ) {
+    return {
+      testName,
+      type: 'unit_regression',
+      evidence: artifacts,
+      rootCause: 'The failure originates in the configured upstream unit gate or coverage gate.',
+      confidence: 'high',
+    };
+  }
+
+  if (
+    lower.includes('fixture') ||
+    lower.includes('page object') ||
+    lower.includes('test helper')
   ) {
     return {
       testName,
       type: 'test_bug',
       evidence: artifacts,
-      rootCause: 'The locator or interaction layer is unstable or outdated.',
+      rootCause: 'The fixture, helper, or test abstraction is inconsistent with the intended flow.',
       confidence: 'high',
     };
   }

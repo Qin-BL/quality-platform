@@ -1,5 +1,6 @@
 import type { HealingSuggestion } from '../healing/healing-suggestion';
 import type { AuditTrail } from './audit-log';
+import type { MissingInputState } from '../ai/missing-inputs';
 
 export interface QCTestSummary {
   total: number;
@@ -24,12 +25,49 @@ export interface QCExternalSystemEntry {
   notes: string;
 }
 
+export interface QCAppMapCoverageEntry {
+  key: string;
+  displayName: string;
+  kind: string;
+  critical: boolean;
+  covered: boolean;
+  matchingTests: number;
+  matchingPlans: number;
+}
+
+export interface QCOrchestrationEntry {
+  enabled: boolean;
+  status: 'skipped' | 'passed' | 'failed';
+  environmentChecks: Array<{
+    name: string;
+    kind: string;
+    status: 'passed' | 'failed' | 'blocked';
+    detail: string;
+  }>;
+  dataDependencies: Array<{
+    name: string;
+    status: 'present' | 'missing' | 'provisioned' | 'failed';
+    detail: string;
+  }>;
+}
+
+export interface QCMCPEntry {
+  enabled: boolean;
+  status: 'prepared' | 'running' | 'completed' | 'skipped';
+  manifestPath: string;
+  artifactDir: string;
+  sessionName: string;
+}
+
 export interface QCFailureEntry {
   testName: string;
   category:
     | 'product_bug'
     | 'test_bug'
     | 'environment_issue'
+    | 'auth_issue'
+    | 'selector_drift'
+    | 'unit_regression'
     | 'flaky'
     | 'data_issue'
     | 'external_dependency'
@@ -87,6 +125,16 @@ export interface QCReport {
   testsSelected: QCSelectedTests;
   testsGenerated: Record<string, number>;
   testsExecuted: QCTestSummary;
+  appCoverage: {
+    enabled: boolean;
+    totalModules: number;
+    coveredModules: number;
+    uncoveredModules: number;
+    modules: QCAppMapCoverageEntry[];
+  };
+  orchestration: QCOrchestrationEntry;
+  mcpRun: QCMCPEntry;
+  blockedState?: MissingInputState;
   externalSystems: QCExternalSystemEntry[];
   failures: QCFailureEntry[];
   healingSuggestions: HealingSuggestion[];
@@ -110,6 +158,26 @@ export function createQCReport(projectKey: string, environment: string): QCRepor
     testsSelected: { smoke: 0, e2e: 0, api: 0, external: 0, visual: 0 },
     testsGenerated: {},
     testsExecuted: { total: 0, passed: 0, failed: 0, skipped: 0, duration: 0 },
+    appCoverage: {
+      enabled: false,
+      totalModules: 0,
+      coveredModules: 0,
+      uncoveredModules: 0,
+      modules: [],
+    },
+    orchestration: {
+      enabled: false,
+      status: 'skipped',
+      environmentChecks: [],
+      dataDependencies: [],
+    },
+    mcpRun: {
+      enabled: false,
+      status: 'skipped',
+      manifestPath: '',
+      artifactDir: '',
+      sessionName: '',
+    },
     externalSystems: [],
     failures: [],
     healingSuggestions: [],
@@ -248,6 +316,63 @@ export function formatQCReport(report: QCReport): string {
   lines.push(`| Skipped | ${skipped} |`);
   lines.push(`| Total | ${total} |`);
   lines.push(`| Duration | ${duration}ms |`);
+
+  lines.push('', '## App Coverage');
+  if (report.appCoverage.enabled) {
+    lines.push(`- Covered Modules: ${report.appCoverage.coveredModules}/${report.appCoverage.totalModules}`);
+    lines.push(`- Uncovered Modules: ${report.appCoverage.uncoveredModules}`);
+    if (report.appCoverage.modules.length > 0) {
+      lines.push('');
+      lines.push('| Module | Kind | Critical | Covered | Matching Tests | Matching Plans |');
+      lines.push('|--------|------|----------|---------|----------------|----------------|');
+      for (const module of report.appCoverage.modules) {
+        lines.push(
+          `| ${module.displayName} | ${module.kind} | ${module.critical ? 'Yes' : 'No'} | ${module.covered ? 'Yes' : 'No'} | ${module.matchingTests} | ${module.matchingPlans} |`
+        );
+      }
+    }
+  } else {
+    lines.push('_(App map coverage not configured)_');
+  }
+
+  lines.push('', '## Environment Orchestration');
+  lines.push(`- Enabled: ${report.orchestration.enabled ? 'Yes' : 'No'}`);
+  lines.push(`- Status: ${report.orchestration.status}`);
+  if (report.orchestration.environmentChecks.length > 0) {
+    lines.push('');
+    lines.push('| Check | Kind | Status | Detail |');
+    lines.push('|-------|------|--------|--------|');
+    for (const check of report.orchestration.environmentChecks) {
+      lines.push(`| ${check.name} | ${check.kind} | ${check.status} | ${check.detail} |`);
+    }
+  }
+  if (report.orchestration.dataDependencies.length > 0) {
+    lines.push('');
+    lines.push('| Data Dependency | Status | Detail |');
+    lines.push('|-----------------|--------|--------|');
+    for (const dependency of report.orchestration.dataDependencies) {
+      lines.push(`| ${dependency.name} | ${dependency.status} | ${dependency.detail} |`);
+    }
+  }
+
+  lines.push('', '## MCP Exploration');
+  lines.push(`- Enabled: ${report.mcpRun.enabled ? 'Yes' : 'No'}`);
+  lines.push(`- Status: ${report.mcpRun.status}`);
+  lines.push(`- Session Name: ${report.mcpRun.sessionName || '_(Not configured)_'}`);
+  lines.push(`- Manifest Path: ${report.mcpRun.manifestPath || '_(Not generated)_'}`);
+  lines.push(`- Artifact Dir: ${report.mcpRun.artifactDir || '_(Not generated)_'}`);
+
+  lines.push('', '## Missing Inputs');
+  if (report.blockedState) {
+    lines.push(`- Task ID: ${report.blockedState.taskId}`);
+    lines.push(`- Next Step: ${report.blockedState.nextStep}`);
+    for (const item of report.blockedState.missingInputs) {
+      lines.push(`- ${item.label}: ${item.reason}`);
+      lines.push(`  Question: ${item.question}`);
+    }
+  } else {
+    lines.push('_(No blocked input state recorded)_');
+  }
 
   lines.push('', '## External Systems Verified');
   if (report.externalSystems.length > 0) {

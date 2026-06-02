@@ -1,8 +1,6 @@
 import type { ProjectQCConfig } from '../../../packages/project/project-config';
 
-const config: ProjectQCConfig = {
-  projectKey: '__PROJECT_KEY__',
-  displayName: '__PROJECT_DISPLAY_NAME__',
+const config: Partial<ProjectQCConfig> = {
   environment: 'staging',
   auth: {
     mode: 'env',
@@ -21,12 +19,6 @@ const config: ProjectQCConfig = {
     testDir: 'projects/__PROJECT_KEY__/tests',
     reportDir: 'reports/qc',
   },
-  context: {
-    contextDir: 'projects/__PROJECT_KEY__/context',
-    testPlansGeneratedDir: 'projects/__PROJECT_KEY__/test-plans/generated',
-    testPlansReviewedDir: 'projects/__PROJECT_KEY__/test-plans/reviewed',
-    testPlansArchivedDir: 'projects/__PROJECT_KEY__/test-plans/archived',
-  },
   unitTests: {
     enabled: false,
     workingDir: '',
@@ -34,7 +26,6 @@ const config: ProjectQCConfig = {
     requiredToProceed: true,
     gates: [],
   },
-  externalSystems: [],
   safety: {
     readonly: false,
     allowProductionWrite: false,
