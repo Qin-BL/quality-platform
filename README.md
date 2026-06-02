@@ -24,8 +24,8 @@ It is not:
 
 ## Visual Overview
 
-```mermaid
-flowchart TD
+::: mermaid
+graph TD
     U["User Request"] --> A["AGENTS.md + quality-platform skill"]
     A --> D["Project Discovery + Config Resolution"]
     D --> O["Auth + Environment Orchestration"]
@@ -33,10 +33,10 @@ flowchart TD
     P --> X["Playwright Execution + MCP Exploration"]
     X --> H["Failure Classification + Healing Suggestions"]
     H --> R["QC Report + Audit Trail + Quality Gates"]
-```
+:::
 
-```mermaid
-flowchart LR
+::: mermaid
+graph LR
     subgraph Governance
         G1["AGENTS.md"]
         G2["skills/quality-platform/SKILL.md"]
@@ -57,7 +57,7 @@ flowchart LR
         O4["Audit Log"]
     end
     Governance --> Runtime --> Output
-```
+:::
 
 ## Advanced Runtime Capabilities
 
@@ -96,8 +96,8 @@ If required configuration is missing during the workflow, the AI should ask only
 
 ## Visual Workflow
 
-```mermaid
-flowchart TD
+::: mermaid
+graph TD
     C["Run <project-key> QC according to AGENTS.md."] --> K["Detect PROJECT_KEY"]
     K --> G["Load governance files"]
     G --> PC["Resolve project config"]
@@ -115,12 +115,12 @@ flowchart TD
     MAP --> RUN["Execute governed QC flow"]
     RUN --> FAIL["Classify failures + suggest healing"]
     FAIL --> REPORT["Write QC report + audit trail"]
-```
+:::
 
 ## Test Asset Lifecycle
 
-```mermaid
-flowchart LR
+::: mermaid
+graph LR
     A["Context Ready"] --> B["Impact Analysis"]
     B --> C["Generated Test Plan"]
     C --> D["Reviewed Test Plan"]
@@ -130,7 +130,7 @@ flowchart LR
     G --> H["Maintained / Deprecated"]
     C -. "cannot generate long-term tests without review" .-> E
     E -. "cannot promote directly" .-> G
-```
+:::
 
 ## Core Commands
 

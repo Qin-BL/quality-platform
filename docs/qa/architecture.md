@@ -16,15 +16,15 @@ Recent framework upgrades add five runtime-grade capabilities:
 
 ## Platform View
 
-```mermaid
-flowchart TD
+::: mermaid
+graph TD
     U["User / AI Request"] --> G["Governance Layer"]
     G --> P["Planning Layer"]
     P --> E["Execution Layer"]
     E --> H["Healing Layer"]
     H --> R["Reporting Layer"]
     R --> Q["Quality Gates / Human Review / Next Iteration"]
-```
+:::
 
 This platform is designed as an operating system for governed QC, not as a single test runner.
 Playwright is only one part of the execution layer.
@@ -41,8 +41,8 @@ The surrounding layers are what make the platform safe, resumable, auditable, an
 
 ## Layer Responsibilities
 
-```mermaid
-flowchart LR
+::: mermaid
+graph LR
     subgraph AI["AI Layer"]
         A1["Planner"]
         A2["Generator"]
@@ -82,7 +82,7 @@ flowchart LR
         R3["CI Evidence"]
     end
     AI --> GOV --> PLAN --> EXEC --> HEAL --> OUT
-```
+:::
 
 ### AI Layer
 
@@ -128,8 +128,8 @@ It records what was read, what was executed, what failed, what is blocked, and w
 
 ## Request Lifecycle
 
-```mermaid
-flowchart TD
+::: mermaid
+graph TD
     CMD["User request"] --> PARSE["Intent + project detection"]
     PARSE --> RULES["Read governance files"]
     RULES --> DISC["Resolve project and environment config"]
@@ -146,30 +146,30 @@ flowchart TD
     MAP --> EXEC["Execute QC or governed exploration"]
     EXEC --> ANALYZE["Classify failures + suggest healing"]
     ANALYZE --> REPORT["Write QC report + audit trail"]
-```
+:::
 
 This lifecycle is what makes the platform feel simple from the outside while still being strict internally.
 The user gives one request; the platform expands that request into a governed sequence.
 
 ## Closed Loops
 
-```mermaid
-flowchart LR
+::: mermaid
+graph LR
     A["Failure"] --> B["Classification"]
     B --> C["Healing Suggestion"]
     C --> D["User Review / Approved Change"]
     D --> E["Re-run QC"]
     E --> A
-```
+:::
 
-```mermaid
-flowchart LR
+::: mermaid
+graph LR
     X["Missing Input"] --> Y["Blocked-state file"]
     Y --> Z["Minimal user question"]
     Z --> W["Local config update or confirmation"]
     W --> V["Resume workflow"]
     V --> X
-```
+:::
 
 The platform is intentionally loop-based:
 
@@ -179,14 +179,14 @@ The platform is intentionally loop-based:
 
 ## Asset Model
 
-```mermaid
-flowchart TD
+::: mermaid
+graph TD
     C1["Project Config"] --> C2["Context"]
     C2 --> C3["Impact Analysis"]
     C3 --> C4["Reviewed Test Plan"]
     C4 --> C5["Generated / Reviewed / Promoted Tests"]
     C5 --> C6["Reports / Traces / Audit"]
-```
+:::
 
 Each artifact has a distinct job:
 
