@@ -24,6 +24,16 @@ graph TD
     E --> H["Healing Layer"]
     H --> R["Reporting Layer"]
     R --> Q["Quality Gates<br/>Human Review<br/>Next Iteration"]
+    classDef input fill:#eef6ff,stroke:#4a90e2,color:#16324f,stroke-width:1.5px;
+    classDef governance fill:#fff7e6,stroke:#d48806,color:#5b3a00,stroke-width:1.5px;
+    classDef runtime fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef healing fill:#fff1f0,stroke:#d64545,color:#5c1d1d,stroke-width:1.5px;
+    classDef output fill:#eefbf3,stroke:#2f9e44,color:#16351f,stroke-width:1.5px;
+    class U input;
+    class G governance;
+    class P,E runtime;
+    class H healing;
+    class R,Q output;
 :::
 
 This platform is designed as an operating system for governed QC, not as a single test runner.
@@ -82,6 +92,18 @@ graph TD
         R3["CI Evidence"]
     end
     AI --> GOV --> PLAN --> EXEC --> HEAL --> OUT
+    classDef ai fill:#eef6ff,stroke:#4a90e2,color:#16324f,stroke-width:1.5px;
+    classDef governance fill:#fff7e6,stroke:#d48806,color:#5b3a00,stroke-width:1.5px;
+    classDef planning fill:#eaf7ee,stroke:#52a36d,color:#1f4b2d,stroke-width:1.5px;
+    classDef execution fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef healing fill:#fff1f0,stroke:#d64545,color:#5c1d1d,stroke-width:1.5px;
+    classDef output fill:#eefbf3,stroke:#2f9e44,color:#16351f,stroke-width:1.5px;
+    class A1,A2,A3,A4,A5,A6,A7 ai;
+    class G1,G2,G3,G4 governance;
+    class P1,P2,P3,P4 planning;
+    class E1,E2,E3,E4,E5 execution;
+    class H1,H2,H3 healing;
+    class R1,R2,R3 output;
 :::
 
 ### AI Layer
@@ -146,6 +168,18 @@ graph TD
     MAP --> EXEC["Execute QC or governed exploration"]
     EXEC --> ANALYZE["Classify failures<br/>+ suggest healing"]
     ANALYZE --> REPORT["Write QC report<br/>+ audit trail"]
+    classDef input fill:#eef6ff,stroke:#4a90e2,color:#16324f,stroke-width:1.5px;
+    classDef governance fill:#fff7e6,stroke:#d48806,color:#5b3a00,stroke-width:1.5px;
+    classDef decision fill:#fff7e6,stroke:#d48806,color:#5b3a00,stroke-width:1.5px;
+    classDef runtime fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef warning fill:#fff1f0,stroke:#d64545,color:#5c1d1d,stroke-width:1.5px;
+    classDef output fill:#eefbf3,stroke:#2f9e44,color:#16351f,stroke-width:1.5px;
+    class CMD input;
+    class RULES governance;
+    class MISS decision;
+    class PARSE,DISC,BLOCK,ASK,RESUME,GATE,ORCH,PLAN,MAP,EXEC,ANALYZE runtime;
+    class STOP warning;
+    class REPORT output;
 :::
 
 This lifecycle is what makes the platform feel simple from the outside while still being strict internally.
@@ -160,6 +194,12 @@ graph TD
     C --> D["User Review<br/>Approved Change"]
     D --> E["Re-run QC"]
     E --> A
+    classDef issue fill:#fff1f0,stroke:#d64545,color:#5c1d1d,stroke-width:1.5px;
+    classDef action fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef review fill:#fff7e6,stroke:#d48806,color:#5b3a00,stroke-width:1.5px;
+    class A issue;
+    class B,C,E action;
+    class D review;
 :::
 
 ::: mermaid
@@ -169,6 +209,12 @@ graph TD
     Z --> W["Local config update<br/>or confirmation"]
     W --> V["Resume workflow"]
     V --> X
+    classDef issue fill:#fff1f0,stroke:#d64545,color:#5c1d1d,stroke-width:1.5px;
+    classDef action fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef review fill:#fff7e6,stroke:#d48806,color:#5b3a00,stroke-width:1.5px;
+    class X issue;
+    class Y,W,V action;
+    class Z review;
 :::
 
 The platform is intentionally loop-based:
@@ -186,6 +232,14 @@ graph TD
     C3 --> C4["Reviewed<br/>Test Plan"]
     C4 --> C5["Generated / Reviewed<br/>/ Promoted Tests"]
     C5 --> C6["Reports<br/>Traces<br/>Audit"]
+    classDef config fill:#eef6ff,stroke:#4a90e2,color:#16324f,stroke-width:1.5px;
+    classDef planning fill:#eaf7ee,stroke:#52a36d,color:#1f4b2d,stroke-width:1.5px;
+    classDef execution fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef output fill:#eefbf3,stroke:#2f9e44,color:#16351f,stroke-width:1.5px;
+    class C1 config;
+    class C2,C3,C4 planning;
+    class C5 execution;
+    class C6 output;
 :::
 
 Each artifact has a distinct job:

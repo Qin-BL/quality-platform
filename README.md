@@ -33,6 +33,12 @@ graph TD
     P --> X["Playwright Execution<br/>+ MCP Runtime"]
     X --> H["Failure Classification<br/>+ Healing Suggestions"]
     H --> R["QC Report<br/>+ Audit Trail<br/>+ Quality Gates"]
+    classDef input fill:#eef6ff,stroke:#4a90e2,color:#16324f,stroke-width:1.5px;
+    classDef runtime fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef outcome fill:#eefbf3,stroke:#2f9e44,color:#16351f,stroke-width:1.5px;
+    class U input;
+    class A,D,O,P,X,H runtime;
+    class R outcome;
 :::
 
 ::: mermaid
@@ -57,6 +63,12 @@ graph TD
         O4["Audit Log"]
     end
     Governance --> Runtime --> Output
+    classDef governance fill:#fff7e6,stroke:#d48806,color:#5b3a00,stroke-width:1.5px;
+    classDef runtime fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef output fill:#eefbf3,stroke:#2f9e44,color:#16351f,stroke-width:1.5px;
+    class G1,G2,G3 governance;
+    class R1,R2,R3,R4,R5,R6 runtime;
+    class O1,O2,O3,O4 output;
 :::
 
 ## Advanced Runtime Capabilities
@@ -115,6 +127,16 @@ graph TD
     MAP --> RUN["Execute governed QC flow"]
     RUN --> FAIL["Classify failures<br/>+ suggest healing"]
     FAIL --> REPORT["Write QC report<br/>+ audit trail"]
+    classDef command fill:#eef6ff,stroke:#4a90e2,color:#16324f,stroke-width:1.5px;
+    classDef decision fill:#fff7e6,stroke:#d48806,color:#5b3a00,stroke-width:1.5px;
+    classDef runtime fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef warning fill:#fff1f0,stroke:#d64545,color:#5c1d1d,stroke-width:1.5px;
+    classDef outcome fill:#eefbf3,stroke:#2f9e44,color:#16351f,stroke-width:1.5px;
+    class C command;
+    class MI decision;
+    class K,G,PC,UG,AC,ASK,SAVE,RESUME,ORCH,CTX,MAP,RUN,FAIL runtime;
+    class STOP1 warning;
+    class REPORT outcome;
 :::
 
 ## Test Asset Lifecycle
@@ -130,6 +152,14 @@ graph TD
     G --> H["Maintained / Deprecated"]
     C -. "review required before<br/>long-term generation" .-> E
     E -. "cannot promote<br/>directly" .-> G
+    classDef planning fill:#eef6ff,stroke:#4a90e2,color:#16324f,stroke-width:1.5px;
+    classDef review fill:#fff7e6,stroke:#d48806,color:#5b3a00,stroke-width:1.5px;
+    classDef execution fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef lifecycle fill:#eefbf3,stroke:#2f9e44,color:#16351f,stroke-width:1.5px;
+    class A,B,C planning;
+    class D,F review;
+    class E execution;
+    class G,H lifecycle;
 :::
 
 ## Core Commands

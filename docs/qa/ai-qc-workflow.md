@@ -35,6 +35,14 @@ graph TD
     L --> M["Classify failures"]
     M --> N["Suggest healing"]
     N --> O["Produce QC report<br/>and audit trail"]
+    classDef input fill:#eef6ff,stroke:#4a90e2,color:#16324f,stroke-width:1.5px;
+    classDef runtime fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef warning fill:#fff1f0,stroke:#d64545,color:#5c1d1d,stroke-width:1.5px;
+    classDef output fill:#eefbf3,stroke:#2f9e44,color:#16351f,stroke-width:1.5px;
+    class A input;
+    class B,C,D,E,G,H,I,J,K,L,M,N runtime;
+    class F warning;
+    class O output;
 :::
 
 This is the canonical AI-native QC path.
@@ -54,6 +62,12 @@ graph TD
     D -->|no| H{"Reviewed plan required?"}
     H -->|yes, missing| I["Stop before<br/>long-term generation"]
     H -->|no or present| J["Proceed to execution"]
+    classDef runtime fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef decision fill:#fff7e6,stroke:#d48806,color:#5b3a00,stroke-width:1.5px;
+    classDef warning fill:#fff1f0,stroke:#d64545,color:#5c1d1d,stroke-width:1.5px;
+    class B,D,H decision;
+    class A,E,F,G,J runtime;
+    class C,I warning;
 :::
 
 The workflow is not just linear.
@@ -68,6 +82,10 @@ graph TD
     C --> D["Receive answer"]
     D --> E["Store local config<br/>if needed"]
     E --> F["Resume unfinished<br/>workflow step"]
+    classDef warning fill:#fff1f0,stroke:#d64545,color:#5c1d1d,stroke-width:1.5px;
+    classDef action fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    class A warning;
+    class B,C,D,E,F action;
 :::
 
 This loop is how the platform avoids making users repeat the full request.
@@ -85,6 +103,14 @@ graph TD
     F --> G["Promoted<br/>tests"]
     C -. "review required" .-> E
     E -. "cannot promote<br/>directly" .-> G
+    classDef planning fill:#eef6ff,stroke:#4a90e2,color:#16324f,stroke-width:1.5px;
+    classDef review fill:#fff7e6,stroke:#d48806,color:#5b3a00,stroke-width:1.5px;
+    classDef execution fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef lifecycle fill:#eefbf3,stroke:#2f9e44,color:#16351f,stroke-width:1.5px;
+    class A,B,C planning;
+    class D,F review;
+    class E execution;
+    class G lifecycle;
 :::
 
 This is the core guardrail for long-term maintainability.
@@ -99,6 +125,12 @@ graph TD
     C --> D["Approved fix<br/>or follow-up"]
     D --> E["Re-run governed QC"]
     E --> A
+    classDef warning fill:#fff1f0,stroke:#d64545,color:#5c1d1d,stroke-width:1.5px;
+    classDef action fill:#f5f3ff,stroke:#7c5cff,color:#221b4b,stroke-width:1.5px;
+    classDef review fill:#fff7e6,stroke:#d48806,color:#5b3a00,stroke-width:1.5px;
+    class A warning;
+    class B,C,E action;
+    class D review;
 :::
 
 Failures are not treated as raw logs only.
