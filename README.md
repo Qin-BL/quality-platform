@@ -27,16 +27,16 @@ It is not:
 ::: mermaid
 graph TD
     U["User Request"] --> A["AGENTS.md + quality-platform skill"]
-    A --> D["Project Discovery + Config Resolution"]
-    D --> O["Auth + Environment Orchestration"]
-    O --> P["Context + Reviewed Test Plan"]
-    P --> X["Playwright Execution + MCP Exploration"]
-    X --> H["Failure Classification + Healing Suggestions"]
-    H --> R["QC Report + Audit Trail + Quality Gates"]
+    A --> D["Project Discovery<br/>+ Config Resolution"]
+    D --> O["Auth Bootstrap<br/>+ Environment Orchestration"]
+    O --> P["Context<br/>+ Reviewed Test Plan"]
+    P --> X["Playwright Execution<br/>+ MCP Runtime"]
+    X --> H["Failure Classification<br/>+ Healing Suggestions"]
+    H --> R["QC Report<br/>+ Audit Trail<br/>+ Quality Gates"]
 :::
 
 ::: mermaid
-graph LR
+graph TD
     subgraph Governance
         G1["AGENTS.md"]
         G2["skills/quality-platform/SKILL.md"]
@@ -98,38 +98,38 @@ If required configuration is missing during the workflow, the AI should ask only
 
 ::: mermaid
 graph TD
-    C["Run <project-key> QC according to AGENTS.md."] --> K["Detect PROJECT_KEY"]
+    C["Run <project-key> QC<br/>according to AGENTS.md."] --> K["Detect PROJECT_KEY"]
     K --> G["Load governance files"]
     G --> PC["Resolve project config"]
-    PC --> UG["Run upstream unit-test gate"]
-    UG -->|fail| STOP1["Stop and report upstream regression"]
+    PC --> UG["Run upstream<br/>unit-test gate"]
+    UG -->|fail| STOP1["Stop and report<br/>upstream regression"]
     UG -->|pass| AC["Resolve auth config"]
     AC --> MI{"Missing required input?"}
-    MI -->|yes| ASK["Ask only for the missing item"]
-    ASK --> SAVE["Save resumable blocked state"]
-    SAVE --> RESUME["Resume unfinished step after user reply"]
+    MI -->|yes| ASK["Ask only for<br/>the missing item"]
+    ASK --> SAVE["Save resumable<br/>blocked state"]
+    SAVE --> RESUME["Resume unfinished step<br/>after user reply"]
     RESUME --> AC
-    MI -->|no| ORCH["Run environment orchestration"]
-    ORCH --> CTX["Read context + reviewed test plan"]
-    CTX --> MAP["Build app-map / coverage summary"]
+    MI -->|no| ORCH["Run environment<br/>orchestration"]
+    ORCH --> CTX["Read context<br/>+ reviewed test plan"]
+    CTX --> MAP["Build app map<br/>+ coverage summary"]
     MAP --> RUN["Execute governed QC flow"]
-    RUN --> FAIL["Classify failures + suggest healing"]
-    FAIL --> REPORT["Write QC report + audit trail"]
+    RUN --> FAIL["Classify failures<br/>+ suggest healing"]
+    FAIL --> REPORT["Write QC report<br/>+ audit trail"]
 :::
 
 ## Test Asset Lifecycle
 
 ::: mermaid
-graph LR
+graph TD
     A["Context Ready"] --> B["Impact Analysis"]
-    B --> C["Generated Test Plan"]
-    C --> D["Reviewed Test Plan"]
-    D --> E["Generated Tests"]
-    E --> F["Reviewed Tests"]
-    F --> G["Promoted Tests"]
+    B --> C["Generated<br/>Test Plan"]
+    C --> D["Reviewed<br/>Test Plan"]
+    D --> E["Generated<br/>Tests"]
+    E --> F["Reviewed<br/>Tests"]
+    F --> G["Promoted<br/>Tests"]
     G --> H["Maintained / Deprecated"]
-    C -. "cannot generate long-term tests without review" .-> E
-    E -. "cannot promote directly" .-> G
+    C -. "review required before<br/>long-term generation" .-> E
+    E -. "cannot promote<br/>directly" .-> G
 :::
 
 ## Core Commands

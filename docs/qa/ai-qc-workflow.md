@@ -24,17 +24,17 @@ graph TD
     A["User request"] --> B["Read governance"]
     B --> C["Detect PROJECT_KEY"]
     C --> D["Resolve project config"]
-    D --> E["Run upstream unit-test gate"]
+    D --> E["Run upstream<br/>unit-test gate"]
     E -->|fail| F["Stop before QC"]
-    E -->|pass| G["Resolve auth config and auth state"]
+    E -->|pass| G["Resolve auth config<br/>and auth state"]
     G --> H["Read context"]
     H --> I["Analyze impact"]
-    I --> J["Generate or locate test plan"]
-    J --> K["Require reviewed plan for long-term generation"]
+    I --> J["Generate or locate<br/>test plan"]
+    J --> K["Require reviewed plan<br/>for long-term generation"]
     K --> L["Generate or execute governed tests"]
     L --> M["Classify failures"]
     M --> N["Suggest healing"]
-    N --> O["Produce QC report and audit trail"]
+    N --> O["Produce QC report<br/>and audit trail"]
 :::
 
 This is the canonical AI-native QC path.
@@ -45,14 +45,14 @@ The platform intentionally expands a short natural-language request into a large
 ::: mermaid
 graph TD
     A["Resolve project"] --> B{"Project exists?"}
-    B -->|no| C["Block and request project setup"]
+    B -->|no| C["Block and request<br/>project setup"]
     B -->|yes| D{"Missing required input?"}
-    D -->|yes| E["Write blocked-state file"]
-    E --> F["Ask only for the missing item"]
+    D -->|yes| E["Write blocked-state<br/>file"]
+    E --> F["Ask only for<br/>the missing item"]
     F --> G["Resume interrupted step"]
     G --> D
     D -->|no| H{"Reviewed plan required?"}
-    H -->|yes, missing| I["Stop before long-term generation"]
+    H -->|yes, missing| I["Stop before<br/>long-term generation"]
     H -->|no or present| J["Proceed to execution"]
 :::
 
@@ -62,12 +62,12 @@ It contains governed decision points that prevent unsafe execution and reduce pr
 ## Missing Input and Resume Loop
 
 ::: mermaid
-graph LR
-    A["Missing input detected"] --> B["Persist blocked-state file"]
-    B --> C["Ask minimal question"]
+graph TD
+    A["Missing input detected"] --> B["Persist blocked-state<br/>file"]
+    B --> C["Ask minimal<br/>question"]
     C --> D["Receive answer"]
-    D --> E["Store local config if needed"]
-    E --> F["Resume unfinished workflow step"]
+    D --> E["Store local config<br/>if needed"]
+    E --> F["Resume unfinished<br/>workflow step"]
 :::
 
 This loop is how the platform avoids making users repeat the full request.
@@ -78,13 +78,13 @@ The blocked state preserves where execution stopped and what exact input is requ
 ::: mermaid
 graph TD
     A["Context"] --> B["Impact analysis"]
-    B --> C["Generated test plan"]
-    C --> D["Reviewed test plan"]
-    D --> E["Long-term test generation"]
-    E --> F["Reviewed tests"]
-    F --> G["Promoted tests"]
+    B --> C["Generated<br/>test plan"]
+    C --> D["Reviewed<br/>test plan"]
+    D --> E["Long-term<br/>test generation"]
+    E --> F["Reviewed<br/>tests"]
+    F --> G["Promoted<br/>tests"]
     C -. "review required" .-> E
-    E -. "cannot promote directly" .-> G
+    E -. "cannot promote<br/>directly" .-> G
 :::
 
 This is the core guardrail for long-term maintainability.
@@ -93,10 +93,10 @@ The platform allows exploration and draft planning, but durable executable asset
 ## Failure and Healing Loop
 
 ::: mermaid
-graph LR
-    A["Execution failure"] --> B["Failure classification"]
-    B --> C["Healing suggestion"]
-    C --> D["Approved fix or follow-up"]
+graph TD
+    A["Execution failure"] --> B["Failure<br/>classification"]
+    B --> C["Healing<br/>suggestion"]
+    C --> D["Approved fix<br/>or follow-up"]
     D --> E["Re-run governed QC"]
     E --> A
 :::

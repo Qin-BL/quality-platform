@@ -23,7 +23,7 @@ graph TD
     P --> E["Execution Layer"]
     E --> H["Healing Layer"]
     H --> R["Reporting Layer"]
-    R --> Q["Quality Gates / Human Review / Next Iteration"]
+    R --> Q["Quality Gates<br/>Human Review<br/>Next Iteration"]
 :::
 
 This platform is designed as an operating system for governed QC, not as a single test runner.
@@ -42,7 +42,7 @@ The surrounding layers are what make the platform safe, resumable, auditable, an
 ## Layer Responsibilities
 
 ::: mermaid
-graph LR
+graph TD
     subgraph AI["AI Layer"]
         A1["Planner"]
         A2["Generator"]
@@ -130,22 +130,22 @@ It records what was read, what was executed, what failed, what is blocked, and w
 
 ::: mermaid
 graph TD
-    CMD["User request"] --> PARSE["Intent + project detection"]
+    CMD["User request"] --> PARSE["Intent +<br/>project detection"]
     PARSE --> RULES["Read governance files"]
-    RULES --> DISC["Resolve project and environment config"]
+    RULES --> DISC["Resolve project<br/>and environment config"]
     DISC --> MISS{"Missing required input?"}
-    MISS -->|yes| BLOCK["Write blocked-state file"]
-    BLOCK --> ASK["Ask only for the missing item"]
-    ASK --> RESUME["Resume interrupted step"]
+    MISS -->|yes| BLOCK["Write blocked-state<br/>file"]
+    BLOCK --> ASK["Ask only for<br/>the missing item"]
+    ASK --> RESUME["Resume interrupted<br/>step"]
     RESUME --> DISC
-    MISS -->|no| GATE["Run upstream unit-test gate"]
+    MISS -->|no| GATE["Run upstream<br/>unit-test gate"]
     GATE -->|fail| STOP["Stop before QC"]
-    GATE -->|pass| ORCH["Run environment orchestration"]
-    ORCH --> PLAN["Read context + reviewed plan"]
-    PLAN --> MAP["Build app map / coverage summary"]
+    GATE -->|pass| ORCH["Run environment<br/>orchestration"]
+    ORCH --> PLAN["Read context<br/>+ reviewed plan"]
+    PLAN --> MAP["Build app map<br/>+ coverage summary"]
     MAP --> EXEC["Execute QC or governed exploration"]
-    EXEC --> ANALYZE["Classify failures + suggest healing"]
-    ANALYZE --> REPORT["Write QC report + audit trail"]
+    EXEC --> ANALYZE["Classify failures<br/>+ suggest healing"]
+    ANALYZE --> REPORT["Write QC report<br/>+ audit trail"]
 :::
 
 This lifecycle is what makes the platform feel simple from the outside while still being strict internally.
@@ -154,19 +154,19 @@ The user gives one request; the platform expands that request into a governed se
 ## Closed Loops
 
 ::: mermaid
-graph LR
+graph TD
     A["Failure"] --> B["Classification"]
-    B --> C["Healing Suggestion"]
-    C --> D["User Review / Approved Change"]
+    B --> C["Healing<br/>Suggestion"]
+    C --> D["User Review<br/>Approved Change"]
     D --> E["Re-run QC"]
     E --> A
 :::
 
 ::: mermaid
-graph LR
-    X["Missing Input"] --> Y["Blocked-state file"]
-    Y --> Z["Minimal user question"]
-    Z --> W["Local config update or confirmation"]
+graph TD
+    X["Missing Input"] --> Y["Blocked-state<br/>file"]
+    Y --> Z["Minimal<br/>user question"]
+    Z --> W["Local config update<br/>or confirmation"]
     W --> V["Resume workflow"]
     V --> X
 :::
@@ -183,9 +183,9 @@ The platform is intentionally loop-based:
 graph TD
     C1["Project Config"] --> C2["Context"]
     C2 --> C3["Impact Analysis"]
-    C3 --> C4["Reviewed Test Plan"]
-    C4 --> C5["Generated / Reviewed / Promoted Tests"]
-    C5 --> C6["Reports / Traces / Audit"]
+    C3 --> C4["Reviewed<br/>Test Plan"]
+    C4 --> C5["Generated / Reviewed<br/>/ Promoted Tests"]
+    C5 --> C6["Reports<br/>Traces<br/>Audit"]
 :::
 
 Each artifact has a distinct job:
