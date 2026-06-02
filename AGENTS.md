@@ -77,7 +77,7 @@ The AI must treat it as a complete QC workflow request and automatically:
 
 1. Detect `PROJECT_KEY`.
 2. Load `AGENTS.md`.
-3. Load `skills/qc/SKILL.md`.
+3. Load `skills/quality-platform/SKILL.md`.
 4. Load `packages/ai/ai-task-contract.md`.
 5. Resolve `projects/<PROJECT_KEY>`.
 6. Resolve project config according to `TEST_ENV`.

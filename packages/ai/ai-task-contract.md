@@ -16,7 +16,7 @@ All AI agents adding QC code or QC governance in this repository must comply wit
 ## Mandatory Read Order
 
 1. `AGENTS.md`
-2. `skills/qc/SKILL.md`
+2. `skills/quality-platform/SKILL.md`
 3. `packages/ai/ai-task-contract.md`
 4. `projects/<PROJECT_KEY>/AGENTS.md` if the project exists
 5. `projects/<PROJECT_KEY>/context/*.md`

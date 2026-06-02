@@ -8,7 +8,7 @@ const ROOT = resolve(__dirname, '..');
 
 const REQUIRED_PATHS = [
   'AGENTS.md',
-  'skills/qc/SKILL.md',
+  'skills/quality-platform/SKILL.md',
   'packages/ai/ai-task-contract.md',
   'packages/ai/ai-task-contract.ts',
   'packages/ai/missing-inputs.ts',

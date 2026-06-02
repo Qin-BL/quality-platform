@@ -2,7 +2,7 @@ import { normalizeProjectEnvironment, type ProjectEnvironment } from '../project
 
 export const AI_TASK_REQUIRED_READ_ORDER = [
   'AGENTS.md',
-  'skills/qc/SKILL.md',
+  'skills/quality-platform/SKILL.md',
   'packages/ai/ai-task-contract.md',
 ] as const;
 

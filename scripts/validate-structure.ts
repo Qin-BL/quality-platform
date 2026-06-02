@@ -31,7 +31,7 @@ const REQUIRED_ENTRIES: RequiredEntry[] = [
   { path: 'agents/report-writer.agent.md', type: 'file' },
   { path: 'agents/governance.agent.md', type: 'file' },
 
-  { path: 'skills/qc/SKILL.md', type: 'file' },
+  { path: 'skills/quality-platform/SKILL.md', type: 'file' },
 
   { path: 'projects', type: 'directory' },
   { path: 'projects/README.md', type: 'file' },
