@@ -20,6 +20,6 @@ Natural language command parser:
 ```typescript
 import { parseQCCommand } from './qc-command-parser';
 
-const cmd = parseQCCommand('按照 AGENTS.md 的规范，执行 hiring QC。');
+const cmd = parseQCCommand('Run hiring QC according to AGENTS.md.');
 // { intent: 'run_qc', projectKey: 'hiring', ... }
 ```

@@ -26,7 +26,7 @@ It is not:
 
 Future users should be able to say:
 
-`按照 AGENTS.md 的规范，执行 hiring QC。`
+`Run hiring QC according to AGENTS.md.`
 
 The framework and AI workflow will expand that into:
 

@@ -38,27 +38,27 @@ export function parseQCCommand(input: string): QCCommand {
 function detectIntent(input: string): QCCommandIntent {
   const lower = input.toLowerCase();
 
-  if (/执行.*qc|run.*qc|执行.*测试/.test(lower) && !/添加/.test(lower) && !/生成/.test(lower)) {
+  if (/\u6267\u884c.*qc|run.*qc|\u6267\u884c.*\u6d4b\u8bd5/.test(lower) && !/\u6dfb\u52a0/.test(lower) && !/\u751f\u6210/.test(lower)) {
     return 'run_qc';
   }
 
-  if (/添加.*业务测试|add.*business.*test/.test(lower)) {
+  if (/\u6dfb\u52a0.*\u4e1a\u52a1\u6d4b\u8bd5|add.*business.*test/.test(lower)) {
     return 'add_business_tests';
   }
 
-  if (/生成.*test.?plan|generate.*test.?plan/.test(lower)) {
+  if (/\u751f\u6210.*test.?plan|generate.*test.?plan/.test(lower)) {
     return 'generate_test_plan';
   }
 
-  if (/基于.*reviewed.*test.?plan.*生成|generate.*from.*reviewed/.test(lower)) {
+  if (/\u57fa\u4e8e.*reviewed.*test.?plan.*\u751f\u6210|generate.*from.*reviewed/.test(lower)) {
     return 'generate_tests_from_reviewed_plan';
   }
 
-  if (/登录|auth.*bootstrap|login/.test(lower)) {
+  if (/\u767b\u5f55|auth.*bootstrap|login/.test(lower)) {
     return 'auth_bootstrap';
   }
 
-  if (/分析.*失败|analyze.*failure|healing/.test(lower)) {
+  if (/\u5206\u6790.*\u5931\u8d25|analyze.*failure|healing/.test(lower)) {
     return 'analyze_failure';
   }
 

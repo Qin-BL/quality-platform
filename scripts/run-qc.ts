@@ -89,7 +89,7 @@ function parseCli(): ParsedCli {
     projectKey,
     env,
     release,
-    bootstrapAuth: bootstrap || /auth\s+bootstrap|本地 auth bootstrap/i.test(rawText),
+    bootstrapAuth: bootstrap || /auth\s+bootstrap|\u672c\u5730 auth bootstrap/i.test(rawText),
     rawText,
   };
 }
@@ -221,7 +221,7 @@ async function main(): Promise<void> {
   if (!cli.projectKey) {
     console.log('No project key detected.');
     console.log('Usage: npm run qc -- --project <project-key>');
-    console.log('   or: "按照 AGENTS.md 的规范，执行 hiring QC。"');
+    console.log('   or: "Run hiring QC according to AGENTS.md."');
     process.exit(1);
   }
 
@@ -284,7 +284,7 @@ async function main(): Promise<void> {
   console.log('');
 
   const report = createQCReport(cli.projectKey, cli.env);
-  report.request = cli.rawText || `按照 AGENTS.md 的规范，执行 ${cli.projectKey} QC。`;
+  report.request = cli.rawText || `Run ${cli.projectKey} QC according to AGENTS.md.`;
   report.summary = 'QC framework prepared the governed execution context for this request.';
   report.scope = cli.release ? 'Release-oriented QC selection.' : 'Standard governed QC selection.';
   report.contextRead = existingContext.map((path) => getContextLabelFromPath(path));

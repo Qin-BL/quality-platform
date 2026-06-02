@@ -12,11 +12,11 @@ export const PROJECT_CONTEXT_FILES = [
 ] as const;
 
 const PROJECT_KEY_PATTERNS = [
-  /执行\s+([a-zA-Z0-9_-]+)\s+QC/i,
-  /添加\s+([a-zA-Z0-9_-]+)\s+业务测试/i,
-  /为\s+([a-zA-Z0-9_-]+)\s+生成\s+test\s*plan/i,
-  /为\s+([a-zA-Z0-9_-]+)\s+执行/i,
-  /使用本地\s+auth\s+bootstrap\s+执行\s+([a-zA-Z0-9_-]+)\s+QC/i,
+  /\u6267\u884c\s+([a-zA-Z0-9_-]+)\s+QC/i,
+  /\u6dfb\u52a0\s+([a-zA-Z0-9_-]+)\s+\u4e1a\u52a1\u6d4b\u8bd5/i,
+  /\u4e3a\s+([a-zA-Z0-9_-]+)\s+\u751f\u6210\s+test\s*plan/i,
+  /\u4e3a\s+([a-zA-Z0-9_-]+)\s+\u6267\u884c/i,
+  /\u4f7f\u7528\u672c\u5730\s+auth\s+bootstrap\s+\u6267\u884c\s+([a-zA-Z0-9_-]+)\s+QC/i,
   /run\s+([a-zA-Z0-9_-]+)\s+qc/i,
   /add\s+([a-zA-Z0-9_-]+)\s+business\s+tests/i,
   /generate\s+test\s+plan\s+for\s+([a-zA-Z0-9_-]+)/i,

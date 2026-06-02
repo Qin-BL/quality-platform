@@ -71,7 +71,7 @@ Current scope is **framework only**.
 
 When the user says:
 
-`按照 AGENTS.md 的规范，执行 <project-key> QC。`
+`Run <project-key> QC according to AGENTS.md.`
 
 The AI must treat it as a complete QC workflow request and automatically:
 
@@ -91,6 +91,7 @@ The AI must treat it as a complete QC workflow request and automatically:
 14. Produce a QC report.
 
 The AI must not ask the user where login config is located.
+The natural-language parser may also accept equivalent non-English variants, but the documented canonical example should remain English.
 
 ## Project Config Discovery Rule
 

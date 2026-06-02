@@ -2,7 +2,7 @@
 
 Example:
 
-`按照 AGENTS.md 的规范，执行 hiring QC。`
+`Run hiring QC according to AGENTS.md.`
 
 ## Expansion
 
